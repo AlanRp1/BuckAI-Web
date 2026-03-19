@@ -49,22 +49,22 @@ let stats = {
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
-// Tentar servir da pasta principal PRIMEIRO (onde você subiu os arquivos soltos)
+// Rotas explícitas para arquivos estáticos (Garante que o Vercel encontre)
+app.get('/style.css', (req, res) => res.sendFile(path.join(__dirname, 'style.css')));
+app.get('/script.js', (req, res) => res.sendFile(path.join(__dirname, 'script.js')));
+app.get('/icon.png', (req, res) => res.sendFile(path.join(__dirname, 'icon.png')));
+
+// Servir pastas (Caso você decida organizar depois)
 app.use(express.static(__dirname));
-// Depois tentar servir da pasta public (caso exista)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Garantir que o index.html seja servido na rota principal /
+// Rota principal para o index.html
 app.get('/', (req, res) => {
   const indexPath = path.join(__dirname, 'index.html');
-  const publicIndexPath = path.join(__dirname, 'public', 'index.html');
-  
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
-  } else if (fs.existsSync(publicIndexPath)) {
-    res.sendFile(publicIndexPath);
   } else {
-    res.status(404).send('Arquivo index.html não encontrado no servidor.');
+    res.status(404).send('Visual não encontrado. Certifique-se de que o index.html está no GitHub.');
   }
 });
 
