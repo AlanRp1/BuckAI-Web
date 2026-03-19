@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuckAI - Gerador de Scripts Gamer</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-overlay"></div>
+    
+    <div class="container">
+        <header>
+            <img src="icon.png" alt="BuckAI Logo" class="main-logo">
+            <h1 id="logo" class="neon-text">BuckAI</h1>
+            <p class="subtitle">O futuro dos scripts gamer começa aqui</p>
+        </header>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <span id="activeNow">0</span>
+                <p>ATIVOS AGORA</p>
+            </div>
+            <div class="stat-card">
+                <span id="totalScripts">0</span>
+                <p>SCRIPTS GERADOS</p>
+            </div>
+            <div class="stat-card">
+                <span id="totalClients">0</span>
+                <p>TOTAL CLIENTES</p>
+            </div>
+        </div>
+
+        <main>
+            <div class="input-card">
+                <div class="input-group">
+                    <label for="description">O que você quer criar?</label>
+                    <textarea id="description" placeholder="Descreva o seu script em detalhes... Ex: Sistema de roubo a banco com aviso para a polícia."></textarea>
+                </div>
+
+                <div class="options-group">
+                    <label>Selecione a Plataforma:</label>
+                    <div class="platform-selector">
+                        <input type="radio" name="platform" value="FiveM" id="fivem" checked>
+                        <label for="fivem" class="platform-btn">FiveM (Lua)</label>
+
+                        <input type="radio" name="platform" value="SA-MP" id="samp">
+                        <label for="samp" class="platform-btn">SA-MP (Pawn)</label>
+                    </div>
+                </div>
+
+                <div class="vision-group">
+                    <label>Analisar Print de Erro (Opcional):</label>
+                    <input type="file" id="imageInput" accept="image/*" class="hidden">
+                    <button id="uploadImageBtn" class="vision-button">
+                        <span id="imageStatus">📎 Enviar Print</span>
+                    </button>
+                </div>
+
+                <button id="generateBtn" class="neon-button">
+                    <span class="btn-text">GERAR SCRIPT</span>
+                    <span class="btn-glow"></span>
+                </button>
+            </div>
+
+            <div id="resultArea" class="result-card hidden">
+                <div class="result-header">
+                    <h3>Script Gerado:</h3>
+                    <div class="result-buttons">
+                        <button id="downloadBtn" class="download-button">Baixar .ZIP</button>
+                        <button id="fixBtn" class="fix-button">Corrigir Erros</button>
+                        <button id="copyBtn" class="copy-button">Copiar Código</button>
+                    </div>
+                </div>
+                <div class="code-container">
+                    <pre><code id="outputCode"></code></pre>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="social-links">
+                <a href="https://discord.gg/86E9RvZ9Ya" target="_blank" class="social-btn discord">Discord Oficial</a>
+                <a href="https://youtube.com/@buck-rp?si=AL2UuVHn1WpQSwZT" target="_blank" class="social-btn youtube">YouTube</a>
+            </div>
+            <p>Dono: buck__ai</p>
+            <p>&copy; 2026 BuckAI - Powered by Buck</p>
+        </footer>
+    </div>
+
+    <div id="lockScreen" class="lock-overlay hidden">
+        <div class="lock-content">
+            <img src="icon.png" alt="BuckAI Logo" class="lock-logo">
+            <h2 class="neon-text-small">ACESSO RESTRITO</h2>
+            <p>Siga os passos para liberar seu acesso vitalício:</p>
+            
+            <div class="auth-fields">
+                <input type="text" id="authUsername" placeholder="Crie um Usuário">
+                <input type="password" id="authPassword" placeholder="Crie uma Senha">
+            </div>
+
+            <div class="lock-buttons">
+                <a href="https://youtube.com/@buck-rp?si=AL2UuVHn1WpQSwZT" target="_blank" id="subscribeBtn" class="neon-button-small">1. INSCREVER-SE NO CANAL</a>
+                <button id="verifySubBtn" class="neon-button-small">2. CRIAR CONTA E ENTRAR</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="loader" class="loader-overlay hidden">
+        <div class="loader"></div>
+        <p>Codificando seu script...</p>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // BLOQUEIA O CLIQUE DIREITO EM TODO O APP
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // BLOQUEIA ATALHOS DE CÓPIA E INSPEÇÃO (CTRL+U, CTRL+SHIFT+I, CTRL+S)
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'p' || e.key === 'c' || e.key === 'v')) {
+                // Permitimos CTRL+C e CTRL+V apenas se não for no corpo do código (proteção extra)
+                if (e.target.tagName !== 'TEXTAREA' && e.target.id !== 'outputCode') {
+                    e.preventDefault();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
