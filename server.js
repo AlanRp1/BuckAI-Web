@@ -48,7 +48,25 @@ let stats = {
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
-app.use(express.static('public'));
+
+// Tentar servir da pasta principal PRIMEIRO (onde você subiu os arquivos soltos)
+app.use(express.static(__dirname));
+// Depois tentar servir da pasta public (caso exista)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Garantir que o index.html seja servido na rota principal /
+app.get('/', (req, res) => {
+  const indexPath = path.join(__dirname, 'index.html');
+  const publicIndexPath = path.join(__dirname, 'public', 'index.html');
+  
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else if (fs.existsSync(publicIndexPath)) {
+    res.sendFile(publicIndexPath);
+  } else {
+    res.status(404).send('Arquivo index.html não encontrado no servidor.');
+  }
+});
 
 // Gerenciar conexões Socket.io para estatísticas em tempo real (Opcional para Serverless)
 if (io) {
