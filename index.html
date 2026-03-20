@@ -3,19 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BuckAI - Gerador de Scripts Gamer</title>
+    <title>BuckAI - O Futuro dos Scripts</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Ícones Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="background-overlay"></div>
     
     <div class="container">
         <nav class="mode-nav">
-            <button id="gamerModeBtn" class="nav-btn active">🎮 Modo Gamer</button>
-            <button id="studentModeBtn" class="nav-btn">📚 Modo Estudante</button>
+            <button id="gamerModeBtn" class="nav-btn active"><i class="fas fa-gamepad"></i> MODO GAMER</button>
+            <button id="studentModeBtn" class="nav-btn"><i class="fas fa-graduation-cap"></i> MODO ESTUDANTE</button>
         </nav>
 
         <header>
@@ -45,12 +47,12 @@
             <div id="gamerSection" class="mode-section">
                 <div class="input-card">
                     <div class="input-group">
-                        <label for="description">O que você quer criar?</label>
+                        <label for="description"><i class="fas fa-terminal"></i> O QUE VOCÊ QUER CRIAR?</label>
                         <textarea id="description" placeholder="Descreva o seu script em detalhes... Ex: Sistema de roubo a banco com aviso para a polícia."></textarea>
                     </div>
 
                     <div class="options-group">
-                        <label>Selecione a Plataforma:</label>
+                        <label><i class="fas fa-layer-group"></i> PLATAFORMA:</label>
                         <div class="platform-selector">
                             <input type="radio" name="platform" value="FiveM" id="fivem" checked>
                             <label for="fivem" class="platform-btn">FiveM (Lua)</label>
@@ -61,16 +63,15 @@
                     </div>
 
                     <div class="vision-group">
-                        <label>Analisar Print de Erro (Opcional):</label>
+                        <label><i class="fas fa-bug"></i> ANALISAR ERRO (OPCIONAL):</label>
                         <input type="file" id="imageInput" accept="image/*" class="hidden">
                         <button id="uploadImageBtn" class="vision-button">
-                            <span id="imageStatus">📎 Enviar Print</span>
+                            <i class="fas fa-image"></i> <span id="imageStatus">ANEXAR PRINT DO ERRO</span>
                         </button>
                     </div>
 
                     <button id="generateBtn" class="neon-button">
-                        <span class="btn-text">GERAR SCRIPT</span>
-                        <span class="btn-glow"></span>
+                        <span class="btn-text">GERAR SCRIPT AGORA</span>
                     </button>
                 </div>
             </div>
@@ -79,32 +80,32 @@
             <div id="studentSection" class="mode-section hidden">
                 <div class="input-card">
                     <div class="input-group">
-                        <label for="studentTask">Qual a sua dúvida ou matéria?</label>
+                        <label for="studentTask"><i class="fas fa-book-open"></i> QUAL A SUA DÚVIDA?</label>
                         <textarea id="studentTask" placeholder="Ex: Resolva esta equação de segundo grau ou explique o que foi a Revolução Francesa..."></textarea>
                     </div>
 
                     <div class="vision-group">
-                        <label>Tirar Foto do Exercício/Matéria:</label>
+                        <label><i class="fas fa-camera"></i> FOTO DO EXERCÍCIO:</label>
                         <input type="file" id="studentImageInput" accept="image/*" class="hidden">
                         <button id="uploadStudentImageBtn" class="vision-button">
-                            <span id="studentImageStatus">📸 Tirar/Enviar Foto</span>
+                            <i class="fas fa-camera-retro"></i> <span id="studentImageStatus">TIRAR/ENVIAR FOTO</span>
                         </button>
                     </div>
 
                     <button id="studyBtn" class="neon-button">
-                        <span class="btn-text">OBTER RESPOSTAS</span>
-                        <span class="btn-glow"></span>
+                        <span class="btn-text">OBTER RESPOSTA IA</span>
                     </button>
                 </div>
             </div>
 
+            <!-- ÁREA DE SCRIPT GERADO (DESIGN VS CODE) -->
             <div id="resultArea" class="result-card hidden">
                 <div class="result-header">
-                    <h3>Script Gerado:</h3>
+                    <h3><i class="fas fa-code"></i> SCRIPT GERADO</h3>
                     <div class="result-buttons">
-                        <button id="downloadBtn" class="download-button">Baixar .ZIP</button>
-                        <button id="fixBtn" class="fix-button">Corrigir Erros</button>
-                        <button id="copyBtn" class="copy-button">Copiar Código</button>
+                        <button id="downloadBtn" class="download-button"><i class="fas fa-file-zipper"></i> ZIP</button>
+                        <button id="fixBtn" class="fix-button"><i class="fas fa-wand-magic-sparkles"></i> CORRIGIR</button>
+                        <button id="copyBtn" class="copy-button"><i class="fas fa-copy"></i> COPIAR</button>
                     </div>
                 </div>
                 <div class="code-container">
@@ -115,49 +116,45 @@
 
         <footer>
             <div class="social-links">
-                <a href="https://discord.gg/86E9RvZ9Ya" target="_blank" class="social-btn discord">Discord Oficial</a>
-                <a href="https://youtube.com/@buck-rp?si=AL2UuVHn1WpQSwZT" target="_blank" class="social-btn youtube">YouTube</a>
+                <a href="https://discord.gg/86E9RvZ9Ya" target="_blank" class="social-btn discord"><i class="fab fa-discord"></i> Discord</a>
+                <a href="https://youtube.com/@buck-rp?si=AL2UuVHn1WpQSwZT" target="_blank" class="social-btn youtube"><i class="fab fa-youtube"></i> YouTube</a>
             </div>
-            <p>Dono: buck__ai</p>
-            <p>&copy; 2026 BuckAI - Powered by Buck</p>
+            <p>Criado por: <strong>buck__ai</strong></p>
+            <p>&copy; 2026 BuckAI - Todos os direitos reservados</p>
         </footer>
     </div>
 
+    <!-- LOCK SCREEN -->
     <div id="lockScreen" class="lock-overlay hidden">
         <div class="lock-content">
             <img src="icon.png" alt="BuckAI Logo" class="lock-logo">
-            <h2 class="neon-text-small">ACESSO RESTRITO</h2>
-            <p>Siga os passos para liberar seu acesso vitalício:</p>
+            <h2 class="neon-text-small">ACESSO VITALÍCIO</h2>
+            <p>Crie sua conta para liberar todas as funções da IA:</p>
             
             <div class="auth-fields">
-                <input type="text" id="authUsername" placeholder="Crie um Usuário">
-                <input type="password" id="authPassword" placeholder="Crie uma Senha">
+                <input type="text" id="authUsername" placeholder="Usuário desejado">
+                <input type="password" id="authPassword" placeholder="Senha de acesso">
             </div>
 
             <div class="lock-buttons">
-                <a href="https://youtube.com/@buck-rp?si=AL2UuVHn1WpQSwZT" target="_blank" id="subscribeBtn" class="neon-button-small">1. INSCREVER-SE NO CANAL</a>
-                <button id="verifySubBtn" class="neon-button-small">2. CRIAR CONTA E ENTRAR</button>
+                <a href="https://youtube.com/@buck-rp?si=AL2UuVHn1WpQSwZT" target="_blank" id="subscribeBtn" class="neon-button-small">1. INSCREVER-SE NO YOUTUBE</a>
+                <button id="verifySubBtn" class="neon-button-small">2. REGISTRAR E ENTRAR</button>
             </div>
         </div>
     </div>
 
+    <!-- LOADER -->
     <div id="loader" class="loader-overlay hidden">
         <div class="loader"></div>
-        <p>Codificando seu script...</p>
+        <p>PROCESSANDO...</p>
     </div>
 
     <script src="script.js"></script>
     <script>
-        // BLOQUEIA O CLIQUE DIREITO EM TODO O APP
         document.addEventListener('contextmenu', event => event.preventDefault());
-
-        // BLOQUEIA ATALHOS DE CÓPIA E INSPEÇÃO (CTRL+U, CTRL+SHIFT+I, CTRL+S)
         document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'p' || e.key === 'c' || e.key === 'v')) {
-                // Permitimos CTRL+C e CTRL+V apenas se não for no corpo do código (proteção extra)
-                if (e.target.tagName !== 'TEXTAREA' && e.target.id !== 'outputCode') {
-                    e.preventDefault();
-                }
+            if (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'p')) {
+                e.preventDefault();
             }
         });
     </script>

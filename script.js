@@ -163,15 +163,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Efeito de digitação (Typewriter)
-  const typeWriter = (text, element, speed = 5) => {
+  // Efeito de digitação (Typewriter) Aprimorado
+  const typeWriter = (text, element, speed = 2) => {
     let i = 0;
     element.textContent = '';
+    
+    // Garantir que a fonte seja Fira Code na área de código
+    element.style.fontFamily = "'Fira Code', monospace";
+    
     const timer = setInterval(() => {
       if (i < text.length) {
         element.textContent += text.charAt(i);
         i++;
-        element.parentElement.parentElement.scrollTop = element.parentElement.parentElement.scrollHeight;
+        // Scroll automático suave
+        if (i % 5 === 0) {
+          element.parentElement.scrollTop = element.parentElement.scrollHeight;
+        }
       } else {
         clearInterval(timer);
       }
