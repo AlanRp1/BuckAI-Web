@@ -1,20 +1,54 @@
 {
-  "name": "buckai-web",
+  "name": "buckai",
   "version": "1.0.0",
-  "description": "BuckAI Web - Gerador de Scripts Gamer",
-  "main": "server.js",
+  "description": "",
+  "main": "main.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js",
+    "electron:dev": "electron .",
+    "electron:pack": "electron-packager . BuckAI_PRO --platform=win32 --arch=x64 --out=dist --overwrite --icon=public/icon.png",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "build": {
+    "appId": "com.buckai.app",
+    "productName": "BuckAI_OFICIAL",
+    "directories": {
+      "output": "dist_final"
+    },
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "public/icon.png"
+    },
+    "files": [
+      "main.js",
+      "public/**/*",
+      "package.json"
+    ]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
   "dependencies": {
-    "groq-sdk": "^1.1.1",
+    "@google/generative-ai": "^0.24.1",
     "adm-zip": "^0.5.16",
     "axios": "^1.13.6",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
+    "electron-serve": "^3.0.1",
     "express": "^5.2.1",
-    "socket.io": "^4.8.3"
+    "groq-sdk": "^1.1.1",
+    "lowdb": "^5.1.0",
+    "node-machine-id": "^1.1.12",
+    "openai": "^6.32.0",
+    "socket.io": "^4.8.3",
+    "socket.io-client": "^4.8.3"
+  },
+  "devDependencies": {
+    "electron": "^41.0.3",
+    "electron-builder": "^26.8.1",
+    "electron-packager": "^17.1.2"
   }
 }
