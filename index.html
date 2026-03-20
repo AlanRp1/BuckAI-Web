@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BuckAI - Gerador de Scripts Gamer</title>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -13,9 +13,15 @@
     <div class="background-overlay"></div>
     
     <div class="container">
+        <nav class="mode-nav">
+            <button id="gamerModeBtn" class="nav-btn active">🎮 Modo Gamer</button>
+            <button id="studentModeBtn" class="nav-btn">📚 Modo Estudante</button>
+        </nav>
+
         <header>
             <img src="icon.png" alt="BuckAI Logo" class="main-logo">
             <h1 id="logo" class="neon-text">BuckAI</h1>
+            <p id="welcomeUser" class="welcome-user hidden"></p>
             <p class="subtitle">O futuro dos scripts gamer começa aqui</p>
         </header>
 
@@ -35,35 +41,61 @@
         </div>
 
         <main>
-            <div class="input-card">
-                <div class="input-group">
-                    <label for="description">O que você quer criar?</label>
-                    <textarea id="description" placeholder="Descreva o seu script em detalhes... Ex: Sistema de roubo a banco com aviso para a polícia."></textarea>
-                </div>
-
-                <div class="options-group">
-                    <label>Selecione a Plataforma:</label>
-                    <div class="platform-selector">
-                        <input type="radio" name="platform" value="FiveM" id="fivem" checked>
-                        <label for="fivem" class="platform-btn">FiveM (Lua)</label>
-
-                        <input type="radio" name="platform" value="SA-MP" id="samp">
-                        <label for="samp" class="platform-btn">SA-MP (Pawn)</label>
+            <!-- MODO GAMER -->
+            <div id="gamerSection" class="mode-section">
+                <div class="input-card">
+                    <div class="input-group">
+                        <label for="description">O que você quer criar?</label>
+                        <textarea id="description" placeholder="Descreva o seu script em detalhes... Ex: Sistema de roubo a banco com aviso para a polícia."></textarea>
                     </div>
-                </div>
 
-                <div class="vision-group">
-                    <label>Analisar Print de Erro (Opcional):</label>
-                    <input type="file" id="imageInput" accept="image/*" class="hidden">
-                    <button id="uploadImageBtn" class="vision-button">
-                        <span id="imageStatus">📎 Enviar Print</span>
+                    <div class="options-group">
+                        <label>Selecione a Plataforma:</label>
+                        <div class="platform-selector">
+                            <input type="radio" name="platform" value="FiveM" id="fivem" checked>
+                            <label for="fivem" class="platform-btn">FiveM (Lua)</label>
+
+                            <input type="radio" name="platform" value="SA-MP" id="samp">
+                            <label for="samp" class="platform-btn">SA-MP (Pawn)</label>
+                        </div>
+                    </div>
+
+                    <div class="vision-group">
+                        <label>Analisar Print de Erro (Opcional):</label>
+                        <input type="file" id="imageInput" accept="image/*" class="hidden">
+                        <button id="uploadImageBtn" class="vision-button">
+                            <span id="imageStatus">📎 Enviar Print</span>
+                        </button>
+                    </div>
+
+                    <button id="generateBtn" class="neon-button">
+                        <span class="btn-text">GERAR SCRIPT</span>
+                        <span class="btn-glow"></span>
                     </button>
                 </div>
+            </div>
 
-                <button id="generateBtn" class="neon-button">
-                    <span class="btn-text">GERAR SCRIPT</span>
-                    <span class="btn-glow"></span>
-                </button>
+            <!-- MODO ESTUDANTE -->
+            <div id="studentSection" class="mode-section hidden">
+                <div class="input-card">
+                    <div class="input-group">
+                        <label for="studentTask">Qual a sua dúvida ou matéria?</label>
+                        <textarea id="studentTask" placeholder="Ex: Resolva esta equação de segundo grau ou explique o que foi a Revolução Francesa..."></textarea>
+                    </div>
+
+                    <div class="vision-group">
+                        <label>Tirar Foto do Exercício/Matéria:</label>
+                        <input type="file" id="studentImageInput" accept="image/*" class="hidden">
+                        <button id="uploadStudentImageBtn" class="vision-button">
+                            <span id="studentImageStatus">📸 Tirar/Enviar Foto</span>
+                        </button>
+                    </div>
+
+                    <button id="studyBtn" class="neon-button">
+                        <span class="btn-text">OBTER RESPOSTAS</span>
+                        <span class="btn-glow"></span>
+                    </button>
+                </div>
             </div>
 
             <div id="resultArea" class="result-card hidden">
@@ -114,7 +146,6 @@
         <p>Codificando seu script...</p>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
     <script src="script.js"></script>
     <script>
         // BLOQUEIA O CLIQUE DIREITO EM TODO O APP
