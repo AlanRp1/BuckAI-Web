@@ -357,12 +357,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const ip = await getIP();
-      const res = await fetch('/api/humanize', {
+      const response = await fetch('/api/humanize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text, tone, ip })
       });
-      const data = await res.json();
+
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("O servidor não reconheceu a rota /api/humanize. Por favor, rode 'vercel --prod' novamente.");
+      }
+
+      const data = await response.json();
       if (data.error) throw new Error(data.error);
 
       resultArea.classList.remove('hidden');
