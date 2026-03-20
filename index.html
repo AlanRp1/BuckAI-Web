@@ -18,12 +18,24 @@
         <nav class="mode-nav">
             <button id="gamerModeBtn" class="nav-btn active"><i class="fas fa-gamepad"></i> MODO GAMER</button>
             <button id="studentModeBtn" class="nav-btn"><i class="fas fa-graduation-cap"></i> MODO ESTUDANTE</button>
+            <button id="humanizeModeBtn" class="nav-btn"><i class="fas fa-user-edit"></i> HUMANIZAR TEXTO</button>
+            <button id="projectsModeBtn" class="nav-btn"><i class="fas fa-folder-open"></i> MEUS PROJETOS</button>
         </nav>
 
         <header>
             <img src="https://cdn.discordapp.com/attachments/1388327970543763599/1484691361633407136/ChatGPT_Image_19_de_mar._de_2026_05_09_37_1.png?ex=69bf2614&is=69bdd494&hm=332c75ce05d7214163e506cbe4ef80f14c8f347fb7d003a594131fb249c90f06&" alt="BuckAI Logo" class="main-logo">
             <h1 id="logo" class="neon-text">BuckAI</h1>
-            <p id="welcomeUser" class="welcome-user hidden"></p>
+            <div id="userInfo" class="user-info-bar hidden">
+                <span id="welcomeUser" class="welcome-user"></span>
+                <div class="user-badges">
+                    <div class="credit-badge">
+                        <i class="fas fa-bolt"></i> <span id="userCredits">0</span> CRÉDITOS
+                    </div>
+                    <button id="upgradeBtn" class="premium-badge">
+                        <i class="fas fa-crown"></i> SEJA PREMIUM
+                    </button>
+                </div>
+            </div>
             <p class="subtitle">O futuro dos scripts gamer começa aqui</p>
         </header>
 
@@ -98,6 +110,51 @@
                 </div>
             </div>
 
+            <!-- MODO HUMANIZADOR -->
+            <div id="humanizeSection" class="mode-section hidden">
+                <div class="input-card">
+                    <div class="input-group">
+                        <label for="humanizeText"><i class="fas fa-feather-alt"></i> TEXTO PARA HUMANIZAR</label>
+                        <textarea id="humanizeText" placeholder="Cole aqui o texto que você quer deixar mais natural..."></textarea>
+                    </div>
+
+                    <div class="options-group">
+                        <label><i class="fas fa-adjust"></i> TOM DA REESCRITA:</label>
+                        <div class="platform-selector">
+                            <input type="radio" name="humanizeTone" value="Casual" id="toneCasual" checked>
+                            <label for="toneCasual" class="platform-btn">Casual</label>
+
+                            <input type="radio" name="humanizeTone" value="Profissional" id="toneProfissional">
+                            <label for="toneProfissional" class="platform-btn">Profissional</label>
+
+                            <input type="radio" name="humanizeTone" value="Gamer" id="toneGamer">
+                            <label for="toneGamer" class="platform-btn">Gamer</label>
+                        </div>
+                    </div>
+
+                    <button id="humanizeBtn" class="neon-button">
+                        <span class="btn-text">HUMANIZAR AGORA</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MEUS PROJETOS -->
+            <div id="projectsSection" class="mode-section hidden">
+                <div class="input-card">
+                    <div class="section-header">
+                        <h2 class="neon-text-small"><i class="fas fa-history"></i> HISTÓRICO DE CRIAÇÕES</h2>
+                        <button id="clearHistoryBtn" class="nav-btn-small"><i class="fas fa-trash"></i> LIMPAR TUDO</button>
+                    </div>
+                    <div id="historyList" class="history-grid">
+                        <!-- Itens do histórico aparecerão aqui via JS -->
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i>
+                            <p>Você ainda não criou nenhum projeto.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ÁREA DE SCRIPT GERADO (DESIGN VS CODE) -->
             <div id="resultArea" class="result-card hidden">
                 <div class="result-header">
@@ -128,8 +185,8 @@
     <div id="lockScreen" class="lock-overlay hidden">
         <div class="lock-content">
             <img src="https://cdn.discordapp.com/attachments/1388327970543763599/1484691361633407136/ChatGPT_Image_19_de_mar._de_2026_05_09_37_1.png?ex=69bf2614&is=69bdd494&hm=332c75ce05d7214163e506cbe4ef80f14c8f347fb7d003a594131fb249c90f06&" alt="BuckAI Logo" class="lock-logo">
-            <h2 class="neon-text-small">ACESSO VITALÍCIO</h2>
-            <p>Crie sua conta para liberar todas as funções da IA:</p>
+            <h2 id="authTitle" class="neon-text-small">BEM-VINDO</h2>
+            <p id="authDesc">Crie sua conta para liberar 5 créditos diários:</p>
             
             <div class="auth-fields">
                 <input type="text" id="authUsername" placeholder="Usuário desejado">
@@ -137,8 +194,8 @@
             </div>
 
             <div class="lock-buttons">
-                <a href="https://youtube.com/@buck-rp?si=AL2UuVHn1WpQSwZT" target="_blank" id="subscribeBtn" class="neon-button-small">1. INSCREVER-SE NO YOUTUBE</a>
-                <button id="verifySubBtn" class="neon-button-small">2. REGISTRAR E ENTRAR</button>
+                <button id="verifySubBtn" class="neon-button-small">ENTRAR OU REGISTRAR</button>
+                <p class="auth-footer">Ao entrar, você aceita nossos termos.</p>
             </div>
         </div>
     </div>

