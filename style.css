@@ -215,7 +215,7 @@ textarea {
   padding: 18px;
   color: #fff;
   font-family: var(--font-ui);
-  font-size: 1rem;
+  font-size: 16px; /* Mínimo 16px para evitar zoom no iOS */
   resize: none;
   transition: var(--transition-fast);
 }
@@ -519,6 +519,7 @@ footer {
   border-radius: 10px;
   color: #fff;
   text-align: center;
+  font-size: 16px; /* Mínimo 16px para evitar zoom no iOS */
 }
 
 .lock-buttons {
