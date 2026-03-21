@@ -1,4 +1,4 @@
-const axios = require('axios');
+const https = require('https');
 
 const WEBHOOKS = {
   logins: "https://discord.com/api/webhooks/1484176339207454911/VBl5RHQhvsDEBI-51tplBAnzXjouHcw0osr_-P1aaJL1LTtGQJMiA3uOjp8AK2a-cRqO",
@@ -8,11 +8,28 @@ const WEBHOOKS = {
 async function sendLog(type, embed) {
   const url = WEBHOOKS[type];
   if (!url) return;
-  try {
-    await axios.post(url, { embeds: [embed] });
-  } catch (e) {
-    console.error(`Erro ao enviar log ${type}:`, e.message);
-  }
+  
+  const payload = JSON.stringify({ embeds: [embed] });
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload)
+    }
+  };
+
+  return new Promise((resolve) => {
+    const req = https.request(url, options, (res) => {
+      res.on('data', () => {});
+      res.on('end', () => resolve());
+    });
+    req.on('error', (e) => {
+      console.error(`Erro ao enviar log ${type}:`, e.message);
+      resolve();
+    });
+    req.write(payload);
+    req.end();
+  });
 }
 
 module.exports = async (req, res) => {

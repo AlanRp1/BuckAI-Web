@@ -1,4 +1,4 @@
-const axios = require('axios');
+const https = require('https');
 
 const WEBHOOK_CODES = "https://discord.com/api/webhooks/1484798584158163044/cfk2askZLMhxXHS4j4pF5aXzwDGjYu4-ZFKb5SeMZTIrt9EofETV9uuJqvXLJIfhjlAH";
 
@@ -20,24 +20,43 @@ module.exports = async (req, res) => {
     codes.push(`BUCK-PREMIUM-${randomPart}-${timestampPart}`);
   }
 
-  try {
-    await axios.post(WEBHOOK_CODES, {
-      embeds: [{
-        title: "🔑 NOVOS CÓDIGOS PREMIUM GERADOS",
-        description: "Estes códigos são de uso único. Mande para os clientes que pagarem!",
-        color: 0x7c3aed,
-        fields: codes.map((code, index) => ({
-          name: `Código ${index + 1}`,
-          value: `\`${code}\``,
-          inline: false
-        })),
-        timestamp: new Date()
-      }]
+  const payload = JSON.stringify({
+    embeds: [{
+      title: "🔑 NOVOS CÓDIGOS PREMIUM GERADOS",
+      description: "Estes códigos são de uso único. Mande para os clientes que pagarem!",
+      color: 0x7c3aed,
+      fields: codes.map((code, index) => ({
+        name: `Código ${index + 1}`,
+        value: `\`${code}\``,
+        inline: false
+      })),
+      timestamp: new Date()
+    }]
+  });
+
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': Buffer.byteLength(payload)
+    }
+  };
+
+  return new Promise((resolve) => {
+    const request = https.request(WEBHOOK_CODES, options, (response) => {
+      let data = '';
+      response.on('data', (chunk) => { data += chunk; });
+      response.on('end', () => {
+        resolve(res.status(200).json({ success: true, message: `${count} códigos enviados ao Discord!` }));
+      });
     });
 
-    return res.status(200).json({ success: true, message: `${count} códigos enviados ao Discord!` });
-  } catch (error) {
-    console.error('Erro ao enviar códigos para o Discord:', error);
-    return res.status(500).json({ error: 'Erro ao enviar códigos para o Discord' });
-  }
+    request.on('error', (error) => {
+      console.error('Erro Webhook:', error);
+      resolve(res.status(500).json({ error: 'Erro ao enviar para o Discord' }));
+    });
+
+    request.write(payload);
+    request.end();
+  });
 };
