@@ -5,7 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BuckAI - O Futuro dos Scripts</title>
     <link rel="icon" type="image/png" href="icon.png">
-    <link rel="stylesheet" href="style.css?v=2.1">
+    <!-- NOVO SCRIPT DE ADMIN PARA FACILITAR -->
+    <script>
+        window.gerarCodigosRapido = async (quantidade = 50) => {
+            console.log("%c [ADMIN] Iniciando...", "color: #7c3aed; font-weight: bold;");
+            const res = await fetch('/api/generate-codes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ secret: "BUCK-ADMIN-SECRET-2026", count: quantidade })
+            });
+            const data = await res.json();
+            if (data.success) alert("Sucesso! " + data.message);
+            else alert("Erro: " + data.error);
+        };
+    </script>
+    <link rel="stylesheet" href="style.css?v=2.2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
