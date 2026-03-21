@@ -12,8 +12,12 @@ const BUCK_INSTRUCTIONS = `Você é o BuckAI, o desenvolvedor #1 de scripts Five
 Sua missão é entregar o código SEMPRE no formato de blocos para que o sistema crie as pastas.
 
 REGRA DE OURO: Use EXATAMENTE este marcador para cada arquivo:
---- [caminho/do/arquivo] ---
+--- [nome_do_arquivo] ---
 [conteúdo]
+
+IMPORTANTE: Não inclua o nome da pasta do script no caminho. Use apenas o nome do arquivo.
+Exemplo Correto: --- client.lua ---
+Exemplo Errado: --- meu_script/client.lua ---
 
 OBRIGATÓRIO PARA FIVEM:
 --- fxmanifest.lua ---
