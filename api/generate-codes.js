@@ -7,17 +7,19 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { secret, count = 5 } = req.body;
+  const { secret, count = 5, codes: customCodes } = req.body;
 
   if (secret !== "BUCK-ADMIN-SECRET-2026") {
     return res.status(403).json({ error: 'Não autorizado' });
   }
 
-  const codes = [];
-  for (let i = 0; i < count; i++) {
-    const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const timestampPart = Date.now().toString(36).substring(4).toUpperCase();
-    codes.push(`BUCK-PREMIUM-${randomPart}-${timestampPart}`);
+  const codes = customCodes || [];
+  if (codes.length === 0) {
+    for (let i = 0; i < count; i++) {
+      const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const timestampPart = Date.now().toString(36).substring(4).toUpperCase();
+      codes.push(`BUCK-VIP-${randomPart}-${timestampPart}`);
+    }
   }
 
   // Discord limit is 25 fields per embed. Let's use 20 to be safe.
