@@ -19,8 +19,20 @@
         'v2/support-v2.js',
         'v2/admin-v2.js',
         'v2/user-id-fix.js',
-        'v2/ui-features.js'
+        'v2/ui-features.js',
+        'v2/user-system-v3.js', // Reset de contas V3
+        'v2/stats-fix.js',      // Correção de Clientes ON e Aleatoriedade
+        'v2/pro-ux.js'          // Interface Premium e UX Profissional
     ];
+
+    // Carregar Estilos Evoluídos
+    const loadStyle = (href) => {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = href;
+        document.head.appendChild(link);
+    };
+    loadStyle('v2/style-v2.css');
 
     modules.forEach(m => loadModule(m));
 })();
