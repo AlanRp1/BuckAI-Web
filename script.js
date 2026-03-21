@@ -423,6 +423,21 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => copyBtn.textContent = 'COPIAR', 2000);
   });
 
+  downloadBtn.addEventListener('click', () => {
+    const code = outputCode.textContent;
+    if (!code) return alert('Nenhum código para baixar.');
+    
+    const blob = new Blob([code], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'script_buckai.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
   let selectedImageBase64 = null;
   let studentImageBase64 = null;
 });
