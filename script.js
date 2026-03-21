@@ -468,17 +468,33 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Se a IA não seguiu o formato estrito, tenta o fallback para FiveM
-      if (!hasFiles && activeBtn && activeBtn.id === 'gamerModeBtn') {
+      if (activeBtn && activeBtn.id === 'gamerModeBtn') {
         const platform = Array.from(platformRadios).find(r => r.checked)?.value || 'FiveM';
         if (platform === 'FiveM') {
-          const clientMatch = code.match(/--- CLIENT ---([\s\S]*?)(?:--- SERVER ---|--- CONFIG ---|$)/);
-          const serverMatch = code.match(/--- SERVER ---([\s\S]*?)(?:--- CLIENT ---|--- CONFIG ---|$)/);
-          const configMatch = code.match(/--- CONFIG ---([\s\S]*?)(?:--- CLIENT ---|--- SERVER ---|$)/);
+          // Garantir arquivos essenciais
+          if (!zip.file("client.lua")) {
+            const clientMatch = code.match(/--- (?:.*?client\.lua|CLIENT) ---([\s\S]*?)(?=---|$)/i);
+            zip.file("client.lua", clientMatch ? clientMatch[1].trim() : code);
+          }
+          if (!zip.file("server.lua")) {
+            const serverMatch = code.match(/--- (?:.*?server\.lua|SERVER) ---([\s\S]*?)(?=---|$)/i);
+            zip.file("server.lua", serverMatch ? serverMatch[1].trim() : "-- server.lua gerado automaticamente por BuckAI");
+          }
+          if (!zip.file("fxmanifest.lua")) {
+            const manifestMatch = code.match(/--- (?:.*?fxmanifest\.lua|MANIFEST) ---([\s\S]*?)(?=---|$)/i);
+            zip.file("fxmanifest.lua", manifestMatch ? manifestMatch[1].trim() : `fx_version 'cerulean'\ngame 'gta5'\n\ndescription 'Gerado por BuckAI'\nauthor 'BuckAI'\n\nclient_script 'client.lua'\nserver_script 'server.lua'\nshared_script 'config.lua'`);
+          }
+          if (!zip.file("config.lua")) {
+            const configMatch = code.match(/--- (?:.*?config\.lua|CONFIG) ---([\s\S]*?)(?=---|$)/i);
+            zip.file("config.lua", configMatch ? configMatch[1].trim() : "-- config.lua para ajustes rapidos");
+          }
 
-          zip.file(`client.lua`, clientMatch ? clientMatch[1].trim() : code);
-          zip.file(`server.lua`, serverMatch ? serverMatch[1].trim() : "-- server.lua");
-          zip.file(`config.lua`, configMatch ? configMatch[1].trim() : "-- config.lua");
-          zip.file(`fxmanifest.lua`, `fx_version 'cerulean'\ngame 'gta5'\nclient_script 'client.lua'\nserver_script 'server.lua'\nshared_script 'config.lua'`);
+          // Se a IA mencionou NUI mas não criou os arquivos, cria a base
+          if (code.toLowerCase().includes("nui") || code.toLowerCase().includes("html")) {
+            if (!zip.file("html/index.html")) zip.file("html/index.html", "<!DOCTYPE html>\n<html>\n<head>\n<link rel='stylesheet' href='style.css'>\n</head>\n<body>\n<script src='script.js'></script>\n</body>\n</html>");
+            if (!zip.file("html/style.css")) zip.file("html/style.css", "/* NUI Style */");
+            if (!zip.file("html/script.js")) zip.file("html/script.js", "// NUI Script");
+          }
           hasFiles = true;
         }
       }
