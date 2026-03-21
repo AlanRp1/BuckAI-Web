@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
           if (filePath.length > 0 && filePath.length < 100) {
             filesFound[filePath.toLowerCase()] = fileContent;
-            zip.file(`${resourceName}/${filePath}`, fileContent);
+            zip.file(filePath, fileContent);
           }
         }
       });
@@ -503,41 +503,41 @@ document.addEventListener('DOMContentLoaded', () => {
       if (platform === 'FiveM') {
         if (!filesFound["client.lua"]) {
           const clientMatch = code.match(/(?:client\.lua|CLIENT):?([\s\S]*?)(?=(?:server\.lua|SERVER|config\.lua|CONFIG|fxmanifest\.lua|MANIFEST|$))/i);
-          zip.file(`${resourceName}/client.lua`, clientMatch ? clientMatch[1].trim() : code);
+          zip.file("client.lua", clientMatch ? clientMatch[1].trim() : code);
         }
         
         if (!filesFound["server.lua"]) {
           const serverMatch = code.match(/(?:server\.lua|SERVER):?([\s\S]*?)(?=(?:client\.lua|CLIENT|config\.lua|CONFIG|fxmanifest\.lua|MANIFEST|$))/i);
-          if (serverMatch) zip.file(`${resourceName}/server.lua`, serverMatch[1].trim());
-          else if (code.toLowerCase().includes("server")) zip.file(`${resourceName}/server.lua`, "-- Server-side logic");
+          if (serverMatch) zip.file("server.lua", serverMatch[1].trim());
+          else if (code.toLowerCase().includes("server")) zip.file("server.lua", "-- Server-side logic");
         }
         
         if (!filesFound["fxmanifest.lua"]) {
           const manifestMatch = code.match(/(?:fxmanifest\.lua|MANIFEST):?([\s\S]*?)(?=(?:client\.lua|CLIENT|server\.lua|SERVER|config\.lua|CONFIG|$))/i);
-          zip.file(`${resourceName}/fxmanifest.lua`, manifestMatch ? manifestMatch[1].trim() : `fx_version 'cerulean'\ngame 'gta5'\ndescription 'Gerado por BuckAI'\nauthor 'BuckAI'\nclient_script 'client.lua'\nserver_script 'server.lua'\nshared_script 'config.lua'`);
+          zip.file("fxmanifest.lua", manifestMatch ? manifestMatch[1].trim() : `fx_version 'cerulean'\ngame 'gta5'\ndescription 'Gerado por BuckAI'\nauthor 'BuckAI'\nclient_script 'client.lua'\nserver_script 'server.lua'\nshared_script 'config.lua'`);
         }
         
         if (!filesFound["config.lua"]) {
           const configMatch = code.match(/(?:config\.lua|CONFIG):?([\s\S]*?)(?=(?:client\.lua|CLIENT|server\.lua|SERVER|fxmanifest\.lua|MANIFEST|$))/i);
-          if (configMatch) zip.file(`${resourceName}/config.lua`, configMatch[1].trim());
-          else zip.file(`${resourceName}/config.lua`, "Config = {}\n-- Configurações do Script");
+          if (configMatch) zip.file("config.lua", configMatch[1].trim());
+          else zip.file("config.lua", "Config = {}\n-- Configurações do Script");
         }
 
         // Inteligência NUI: Criar pastas html/ se detectado
         if (code.toLowerCase().includes("html") || code.toLowerCase().includes("nui") || code.toLowerCase().includes("css")) {
           if (!filesFound["html/index.html"] && !filesFound["index.html"]) {
-            zip.file(`${resourceName}/html/index.html`, "<!DOCTYPE html>\n<html><head><link rel='stylesheet' href='style.css'></head><body>\n  <div id='container'>\n    <h1>BuckAI NUI</h1>\n  </div>\n  <script src='script.js'></script>\n</body></html>");
+            zip.file("html/index.html", "<!DOCTYPE html>\n<html><head><link rel='stylesheet' href='style.css'></head><body>\n  <div id='container'>\n    <h1>BuckAI NUI</h1>\n  </div>\n  <script src='script.js'></script>\n</body></html>");
           }
           if (!filesFound["html/style.css"] && !filesFound["style.css"]) {
-            zip.file(`${resourceName}/html/style.css`, "body { background: transparent; color: white; font-family: sans-serif; }");
+            zip.file("html/style.css", "body { background: transparent; color: white; font-family: sans-serif; }");
           }
           if (!filesFound["html/script.js"] && !filesFound["script.js"]) {
-            zip.file(`${resourceName}/html/script.js`, "window.addEventListener('message', (event) => {\n  // Lógica NUI aqui\n});");
+            zip.file("html/script.js", "window.addEventListener('message', (event) => {\n  // Lógica NUI aqui\n});");
           }
         }
       } else if (platform === 'SA-MP') {
         if (Object.keys(filesFound).length === 0) {
-          zip.file(`${resourceName}/script.pwn`, code);
+          zip.file("script.pwn", code);
         }
       }
 
@@ -545,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (activeBtn && (activeBtn.id === 'humanizeModeBtn' || activeBtn.id === 'studentModeBtn')) {
         zip.file(`${filename}.txt`, code);
       } else {
-        zip.file(`${resourceName}/README_BUCKAI.txt`, `BuckAI - PROJETO COMPLETO\n\nResource: ${resourceName}\nData: ${new Date().toLocaleString()}\n\nESTRUTURA GARANTIDA:\n- client.lua\n- server.lua\n- config.lua\n- fxmanifest.lua\n- html/ (se aplicável)`);
+        zip.file("README_BUCKAI.txt", `BuckAI - PROJETO COMPLETO\n\nResource: ${resourceName}\nData: ${new Date().toLocaleString()}\n\nESTRUTURA GARANTIDA:\n- client.lua\n- server.lua\n- config.lua\n- fxmanifest.lua\n- html/ (se aplicável)`);
       }
 
       const content = await zip.generateAsync({ type: "blob" });
