@@ -377,6 +377,51 @@
 
     // Pagamento
     if (id === 'upgradeBtn') getEl('paymentModal')?.classList.remove('hidden');
+
+    if (id === 'adminBatchBtn') {
+        const myData = getUserData();
+        if (myData.id !== 'BUCK-102279') return alert("Apenas o DONO pode gerar códigos!");
+
+        const count = parseInt(getEl('adminBatchCount')?.value) || 100;
+        if (count < 1) return alert("Quantidade inválida!");
+
+        const loader = getEl('loader');
+        if (loader) loader.classList.remove('hidden');
+
+        try {
+            const codes = [];
+            for (let i = 0; i < count; i++) {
+                const random = Math.random().toString(36).substring(2, 8).toUpperCase();
+                codes.push(`BUCK-VIP-${random}-${Date.now().toString(36).toUpperCase()}`);
+            }
+
+            // Webhook direta (Segura para o Dono)
+            const webhookUrl = "https://discord.com/api/webhooks/1484798584158163044/cfk2askZLMhxXHS4j4pF5aXzwDGjYu4-ZFKb5SeMZTIrt9EofETV9uuJqvXLJIfhjlAH";
+            
+            // Discord tem limite de caracteres, enviamos em blocos se for muito grande
+            const codeString = codes.join('\n');
+            const blocks = [];
+            for (let i = 0; i < codeString.length; i += 1900) {
+                blocks.push(codeString.substring(i, i + 1900));
+            }
+
+            for (const block of blocks) {
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        content: `**🚀 NOVOS CÓDIGOS PREMIUM GERADOS**\n\`\`\`\n${block}\n\`\`\``
+                    })
+                });
+            }
+
+            alert(`Sucesso! ${count} códigos foram enviados para o seu Discord.`);
+        } catch (e) {
+            alert("Erro ao enviar para o Discord.");
+        } finally {
+            if (loader) loader.classList.add('hidden');
+        }
+    }
     if (id === 'closePaymentBtn') getEl('paymentModal')?.classList.add('hidden');
 
     // Utilitários
