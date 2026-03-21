@@ -5,20 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BuckAI - O Futuro dos Scripts</title>
     <link rel="icon" type="image/png" href="icon.png">
-    <!-- NOVO SCRIPT DE ADMIN PARA FACILITAR -->
-    <script>
-        window.gerarCodigosRapido = async (quantidade = 50) => {
-            console.log("%c [ADMIN] Iniciando...", "color: #7c3aed; font-weight: bold;");
-            const res = await fetch('/api/generate-codes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ secret: "BUCK-ADMIN-SECRET-2026", count: quantidade })
-            });
-            const data = await res.json();
-            if (data.success) alert("Sucesso! " + data.message);
-            else alert("Erro: " + data.error);
-        };
-    </script>
+    
     <link rel="stylesheet" href="style.css?v=2.2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -174,7 +161,6 @@
                         <button id="clearHistoryBtn" class="nav-btn-small"><i class="fas fa-trash"></i> LIMPAR TUDO</button>
                     </div>
                     <div id="historyList" class="history-grid">
-                        <!-- Itens do histórico aparecerão aqui via JS -->
                         <div class="empty-state">
                             <i class="fas fa-folder-open"></i>
                             <p>Você ainda não criou nenhum projeto.</p>
@@ -248,7 +234,7 @@
                 </div>
             </div>
 
-            <!-- ÁREA DE SCRIPT GERADO (DESIGN VS CODE) -->
+            <!-- ÁREA DE SCRIPT GERADO -->
             <div id="resultArea" class="result-card hidden">
                 <div class="result-header">
                     <h3><i class="fas fa-code"></i> SCRIPT GERADO</h3>
@@ -277,136 +263,68 @@
     </footer>
     </div>
 
-    <!-- MODAL DE ADMIN SECRETO (ATALHO) -->
-    <div id="adminModal" class="lock-overlay hidden">
-        <div class="lock-content">
-            <button id="closeAdminBtn" class="close-modal-btn">&times;</button>
-            <h2 class="neon-text-small">PAINEL DO DONO</h2>
-            <div class="auth-fields">
-                <input type="number" id="adminCodeCount" placeholder="QUANTIDADE (EX: 100)" value="100">
-                <button id="adminGenerateBtn" class="neon-button-small">GERAR E MANDAR DISCORD</button>
-            </div>
-            <p id="adminStatus" style="margin-top: 10px; font-size: 0.8rem; color: var(--accent-neon);"></p>
-        </div>
-    </div>
-
-    <!-- MODAL DE RESPOSTA ADMIN (CHATS) -->
-    <div id="adminChatModal" class="lock-overlay hidden">
-        <div class="lock-content profile-modal">
-            <button id="closeAdminChatBtn" class="close-modal-btn">&times;</button>
-            <h2 id="adminChatTitle" class="neon-text-small">CHAT COM USUÁRIO</h2>
-            <div id="adminChatMessages" class="chat-messages" style="height: 300px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin: 15px 0;"></div>
-            <div class="chat-input-area">
-                <input type="text" id="adminReplyInput" placeholder="Sua resposta...">
-                <button id="sendAdminReplyBtn" class="neon-button-small">RESPONDER</button>
-            </div>
-        </div>
-    </div>
-
     <!-- LOCK SCREEN -->
     <div id="lockScreen" class="lock-overlay hidden">
         <div class="lock-content">
             <img src="https://cdn.discordapp.com/attachments/1388327970543763599/1484691361633407136/ChatGPT_Image_19_de_mar._de_2026_05_09_37_1.png?ex=69bf2614&is=69bdd494&hm=332c75ce05d7214163e506cbe4ef80f14c8f347fb7d003a594131fb249c90f06&" alt="BuckAI Logo" class="lock-logo">
             <h2 id="authTitle" class="neon-text-small">BEM-VINDO</h2>
             <p id="authDesc">Crie sua conta ou faça login para acessar:</p>
-            
             <div class="auth-fields">
                 <input type="text" id="authUsername" placeholder="Usuário">
                 <input type="password" id="authPassword" placeholder="Senha">
             </div>
-
             <div class="lock-buttons">
                 <button id="loginBtn" class="neon-button-small">ENTRAR</button>
                 <button id="registerBtn" class="neon-button-small secondary">CADASTRAR</button>
-                <p class="auth-footer">Ao entrar, você aceita nossos termos.</p>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE PERFIL/CONFIGURAÇÕES -->
+    <!-- MODAL DE PERFIL -->
     <div id="settingsModal" class="lock-overlay hidden">
         <div class="lock-content profile-modal">
             <button id="closeSettingsBtn" class="close-modal-btn">&times;</button>
             <h2 class="neon-text-small">PERFIL DO USUÁRIO</h2>
-            
             <div class="profile-setup">
                 <div class="avatar-upload">
                     <img id="profilePreview" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Preview">
                     <input type="file" id="avatarInput" accept="image/*" class="hidden">
-                    <button id="changeAvatarBtn" class="neon-button-small"><i class="fas fa-camera"></i> MUDAR FOTO</button>
+                    <button id="changeAvatarBtn" class="neon-button-small">MUDAR FOTO</button>
                 </div>
-                
                 <div class="profile-info-fields">
-                    <div class="info-item">
-                        <label>ID DA IA:</label>
-                        <span id="userIdDisplay" class="id-badge">#000000</span>
-                    </div>
-                    <div class="info-item">
-                        <label>USUÁRIO:</label>
-                        <span id="userNameDisplay" class="user-badge-text">USUÁRIO</span>
-                    </div>
-                    <div class="info-item">
-                        <label>STATUS:</label>
-                        <span id="userStatusDisplay" class="status-badge">MEMBRO FREE</span>
-                    </div>
+                    <p>ID: <span id="userIdDisplay">#000000</span></p>
+                    <p>USER: <span id="userNameDisplay">---</span></p>
+                    <p>STATUS: <span id="userStatusDisplay">MEMBRO FREE</span></p>
                 </div>
             </div>
-
-            <button id="saveProfileBtn" class="neon-button-small">SALVAR ALTERAÇÕES</button>
-            <button id="logoutBtn" class="neon-button-small logout-btn">SAIR DA CONTA</button>
+            <button id="saveProfileBtn" class="neon-button-small">SALVAR</button>
+            <button id="logoutBtn" class="neon-button-small logout-btn">SAIR</button>
         </div>
     </div>
 
-    <!-- LOADER -->
-    <div id="loader" class="loader-overlay hidden">
-        <div class="loader"></div>
-        <p>PROCESSANDO...</p>
-    </div>
-
-    <!-- MODAL DE PAGAMENTO LIVEPIX -->
+    <!-- MODAL DE PAGAMENTO -->
     <div id="paymentModal" class="lock-overlay hidden">
         <div class="lock-content">
             <button id="closePaymentBtn" class="close-modal-btn">&times;</button>
             <h2 class="neon-text-small">TORNE-SE PREMIUM</h2>
-            <p>Clique no botão abaixo para pagar via <strong>LivePix</strong>:</p>
-            
-            <div class="livepix-area">
-                <a href="https://livepix.gg/padrinrp" id="livepixLink" target="_blank" class="livepix-button">
-                    <i class="fas fa-wallet"></i> PAGAR COM LIVEPIX
-                </a>
-            </div>
-
-            <div class="payment-instructions">
-                <p><strong>Após o pagamento:</strong></p>
-                <ol>
-                    <li>A sua mensagem aparecerá na nossa live/sistema.</li>
-                    <li>Envie seu nome de usuário no nosso Discord.</li>
-                    <li>Receba seu código de ativação e cole abaixo.</li>
-                </ol>
-            </div>
-
+            <a href="https://livepix.gg/padrinrp" target="_blank" class="neon-button-small" style="text-decoration:none; display:block; margin:20px 0; background:#10b981;">PAGAR VIA LIVEPIX</a>
             <div class="auth-fields">
-                <input type="text" id="modalActivationCode" placeholder="COLE SEU CÓDIGO DE ATIVAÇÃO">
+                <input type="text" id="modalActivationCode" placeholder="COLE SEU CÓDIGO AQUI">
+                <button id="modalActivateBtn" class="neon-button-small">ATIVAR PREMIUM</button>
             </div>
-
-            <button id="modalActivateBtn" class="neon-button-small">ATIVAR PREMIUM AGORA</button>
         </div>
     </div>
 
-    <!-- INJEÇÃO DE ELEMENTO DUMMY PARA PREVENIR CRASH DE SCRIPTS ANTIGOS -->
-    <div id="verifySubBtn" style="display:none;"></div>
-    <div id="activeNow" style="display:none;"></div>
-    <div id="totalScripts" style="display:none;"></div>
-    <div id="totalClients" style="display:none;"></div>
+    <!-- LOADER -->
+    <div id="loader" class="loader-overlay hidden"><div class="loader"></div><p>PROCESSANDO...</p></div>
 
-    <script src="script.js?v=2.1"></script>
+    <!-- ELEMENTOS DE SEGURANÇA (DUMMY) -->
+    <div id="verifySubBtn" style="display:none;"></div>
+
+    <script src="script.js?v=2.2"></script>
     <script>
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'p')) {
-                e.preventDefault();
-            }
-        });
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => { if (e.ctrlKey && ['u','s','p'].includes(e.key)) e.preventDefault(); });
     </script>
 </body>
 </html>
