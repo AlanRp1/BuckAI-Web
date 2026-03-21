@@ -427,11 +427,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const code = outputCode.textContent;
     if (!code) return alert('Nenhum código para baixar.');
     
+    // Detectar a extensão correta baseada no modo ou conteúdo
+    let extension = 'txt';
+    let filename = 'script_buckai';
+
+    const activeBtn = document.querySelector('.nav-btn.active');
+    if (activeBtn) {
+      if (activeBtn.id === 'gamerModeBtn') {
+        const platform = Array.from(platformRadios).find(r => r.checked)?.value || 'FiveM';
+        extension = (platform === 'FiveM') ? 'lua' : 'pwn';
+        filename = `script_${platform.toLowerCase()}`;
+      } else if (activeBtn.id === 'humanizeModeBtn') {
+        extension = 'txt';
+        filename = 'texto_humanizado';
+      } else if (activeBtn.id === 'studentModeBtn') {
+        extension = 'txt';
+        filename = 'estudo_buckai';
+      }
+    }
+
     const blob = new Blob([code], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'script_buckai.txt';
+    a.download = `${filename}.${extension}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
