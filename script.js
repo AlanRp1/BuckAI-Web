@@ -122,6 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const updateUI = () => {
+    // Verificar Termos de Serviço primeiro
+    if (localStorage.getItem('buckai_terms_accepted') !== 'true') {
+      window.location.href = 'terms.html';
+      return;
+    }
+
     const data = getUserData();
     if (data.username) {
       welcomeUserEl.textContent = `BEM-VINDO, ${data.username.toUpperCase()}`;
