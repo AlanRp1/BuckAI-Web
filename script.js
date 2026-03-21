@@ -212,17 +212,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Função para você (Dono) gerar códigos direto no console
   window.gerarLoteDeCodigos = async (quantidade = 5) => {
-    console.log("%c Gerando códigos... Aguarde o Discord. ", "background: #7c3aed; color: white;");
+    console.log(`%c [BuckAI] Iniciando geração de ${quantidade} códigos... `, "background: #7c3aed; color: white; font-weight: bold;");
     try {
       const res = await fetch('/api/generate-codes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ secret: "BUCK-ADMIN-SECRET-2026", count: quantidade })
       });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error(`%c [ERRO API] Status: ${res.status} `, "background: #ef4444; color: white;");
+        console.error("Detalhes do erro:", errorText);
+        alert(`Erro ao gerar: O servidor retornou ${res.status}. Verifique o console do navegador e os logs da Vercel.`);
+        return;
+      }
+
       const data = await res.json();
-      if (data.success) alert(`${quantidade} códigos foram enviados para o seu canal do Discord!`);
-      else alert("Erro ao gerar: " + data.error);
-    } catch (e) { alert("Erro de conexão com a API."); }
+      if (data.success) {
+        console.log(`%c [SUCESSO] ${data.message} `, "background: #10b981; color: white;");
+        alert(`${quantidade} códigos foram enviados para o seu canal do Discord!`);
+      } else {
+        console.error("[ERRO NA RESPOSTA]", data.error);
+        alert("Erro ao gerar: " + data.error);
+      }
+    } catch (e) { 
+      console.error("[ERRO DE CONEXÃO]", e);
+      alert("Erro de conexão com a API. Verifique se você subiu a pasta 'api/' para o GitHub."); 
+    }
   };
 
   activateBtn.addEventListener('click', () => {
