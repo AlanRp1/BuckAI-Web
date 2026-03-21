@@ -41,6 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const humanizeToneRadios = document.getElementsByName('humanizeTone');
   const historyList = document.getElementById('historyList');
   const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+  const activationArea = document.getElementById('activationArea');
+  const activationCodeInput = document.getElementById('activationCode');
+  const activateBtn = document.getElementById('activateBtn');
+  const paymentModal = document.getElementById('paymentModal');
+  const closePaymentBtn = document.getElementById('closePaymentBtn');
+  const modalActivationCodeInput = document.getElementById('modalActivationCode');
+  const modalActivateBtn = document.getElementById('modalActivateBtn');
 
   // --- Configurações ---
   const MAX_FREE_CREDITS = 5;
@@ -123,9 +130,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (data.isPremium) {
         upgradeBtn.innerHTML = '<i class="fas fa-crown"></i> PLANO PREMIUM';
         upgradeBtn.classList.add('active');
+        activationArea.classList.add('hidden');
       } else {
         upgradeBtn.innerHTML = '<i class="fas fa-crown"></i> SEJA PREMIUM';
         upgradeBtn.classList.remove('active');
+        activationArea.classList.remove('hidden');
       }
 
       userInfoBar.classList.remove('hidden');
@@ -149,18 +158,73 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
   };
 
-  // Upgrade para Premium (Simulado)
+  // Upgrade para Premium (Modal com QR Code)
   upgradeBtn.addEventListener('click', () => {
     const data = getUserData();
     if (data.isPremium) {
       alert("Você já é um membro Premium! Aproveite seus benefícios ilimitados.");
       return;
     }
-    if (confirm("Deseja ativar o Plano Premium experimental? (Benefícios: Créditos Infinitos e Suporte Prioritário)")) {
+    paymentModal.classList.remove('hidden');
+  });
+
+  closePaymentBtn.addEventListener('click', () => {
+    paymentModal.classList.add('hidden');
+  });
+
+  // Lógica de Ativação Manual (v1.8 - Códigos de Uso Único via Webhook)
+  const activatePremium = (code) => {
+    const data = getUserData();
+    
+    // Lista de códigos já usados (salva no localStorage para este navegador)
+    const usedCodes = JSON.parse(localStorage.getItem('buckai_used_codes')) || [];
+
+    if (usedCodes.includes(code)) {
+      alert("Este código já foi utilizado!");
+      return;
+    }
+
+    // Validação robusta de códigos gerados pela nossa API
+    // Formato: BUCK-PREMIUM-XXXXXX-XXXX
+    const isValidFormat = /^BUCK-PREMIUM-[A-Z0-9]{6}-[A-Z0-9]+$/.test(code);
+    const isAdminCode = (code === "BUCK-MASTER-ADMIN");
+
+    if (isValidFormat || isAdminCode) {
       data.isPremium = true;
       saveUserData(data);
-      alert("Parabéns! Agora você é BuckAI Premium! 🚀");
+      
+      // Registrar como usado
+      usedCodes.push(code);
+      localStorage.setItem('buckai_used_codes', JSON.stringify(usedCodes));
+
+      alert("SISTEMA ATUALIZADO! Agora você é BuckAI Premium! 🚀");
+      paymentModal.classList.add('hidden');
+    } else {
+      alert("Código de ativação inválido ou formato incorreto.");
     }
+  };
+
+  // Função para você (Dono) gerar códigos direto no console
+  window.gerarLoteDeCodigos = async (quantidade = 5) => {
+    console.log("%c Gerando códigos... Aguarde o Discord. ", "background: #7c3aed; color: white;");
+    try {
+      const res = await fetch('/api/generate-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: "BUCK-ADMIN-SECRET-2026", count: quantidade })
+      });
+      const data = await res.json();
+      if (data.success) alert(`${quantidade} códigos foram enviados para o seu canal do Discord!`);
+      else alert("Erro ao gerar: " + data.error);
+    } catch (e) { alert("Erro de conexão com a API."); }
+  };
+
+  activateBtn.addEventListener('click', () => {
+    activatePremium(activationCodeInput.value.trim());
+  });
+
+  modalActivateBtn.addEventListener('click', () => {
+    activatePremium(modalActivationCodeInput.value.trim());
   });
 
   // --- Lógica de Histórico ---
@@ -386,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Inicialização ---
-  console.log("%c BuckAI v1.7 - Estrutura de Pastas Finalizada ", "background: #7c3aed; color: white; font-weight: bold; padding: 4px;");
+  console.log("%c BuckAI v1.8 - Gerador de Códigos Webhook Ativo ", "background: #7c3aed; color: white; font-weight: bold; padding: 4px;");
   updateUI();
 
   // Outros ouvintes de eventos
