@@ -454,54 +454,69 @@ document.addEventListener('DOMContentLoaded', () => {
       const zip = new JSZip();
       const resourceName = filename.replace('script_', '') || 'buckai_resource';
       
-      // Regex ultra-robusta para capturar blocos --- [nome] --- ou --- [caminho/nome] ---
-      const fileRegex = /--- (.*?) ---([\s\S]*?)(?=---|$)/g;
-      let match;
+      // Regex MEGA-ROBUSTA para capturar blocos de código de qualquer jeito que a IA mande
+      // Padrões aceitos: --- arquivo ---, **arquivo**, [arquivo], arquivo:
+      const filePatterns = [
+        /--- (.*?) ---([\s\S]*?)(?=---|$)/g,
+        /\*\*(.*?)\*\*([\s\S]*?)(?=\*\*|$)/g,
+        /\[(.*?)\]([\s\S]*?)(?=\[|$)/g
+      ];
+
       let filesFound = {};
 
-      while ((match = fileRegex.exec(code)) !== null) {
-        let filePath = match[1].trim();
-        let fileContent = match[2].trim();
-        
-        // Normalizar caminhos (remover barras iniciais, etc)
-        filePath = filePath.replace(/^\/+/, '');
-        filesFound[filePath.toLowerCase()] = fileContent;
-        
-        // Adicionar ao ZIP dentro da pasta do recurso
-        zip.file(`${resourceName}/${filePath}`, fileContent);
-      }
+      filePatterns.forEach(pattern => {
+        let match;
+        while ((match = pattern.exec(code)) !== null) {
+          let filePath = match[1].trim();
+          let fileContent = match[2].trim();
+          
+          // Limpar nomes de arquivos (remover extensões duplicadas ou caminhos estranhos)
+          filePath = filePath.replace(/[:\s]/g, '');
+          if (filePath.length > 0 && filePath.length < 50) {
+            filePath = filePath.replace(/^\/+/, '');
+            filesFound[filePath.toLowerCase()] = fileContent;
+            zip.file(`${resourceName}/${filePath}`, fileContent);
+          }
+        }
+      });
 
       // FALLBACK DE SEGURANÇA: Se for FiveM, garantir os arquivos OBRIGATÓRIOS
       if (activeBtn && activeBtn.id === 'gamerModeBtn') {
         const platform = Array.from(platformRadios).find(r => r.checked)?.value || 'FiveM';
         
         if (platform === 'FiveM') {
-          // 1. Garantir client.lua
+          // Tentar capturar códigos que não estão em blocos claros (busca por palavras-chave)
           if (!filesFound["client.lua"]) {
-            zip.file(`${resourceName}/client.lua`, code.includes("---") ? "-- código client não identificado" : code);
+            const clientMatch = code.match(/(?:client\.lua|CLIENT):?([\s\S]*?)(?=(?:server\.lua|SERVER|config\.lua|CONFIG|fxmanifest\.lua|MANIFEST|$))/i);
+            zip.file(`${resourceName}/client.lua`, clientMatch ? clientMatch[1].trim() : code);
           }
           
-          // 2. Garantir server.lua
           if (!filesFound["server.lua"]) {
-            zip.file(`${resourceName}/server.lua`, "-- server.lua gerado automaticamente por BuckAI");
+            const serverMatch = code.match(/(?:server\.lua|SERVER):?([\s\S]*?)(?=(?:client\.lua|CLIENT|config\.lua|CONFIG|fxmanifest\.lua|MANIFEST|$))/i);
+            zip.file(`${resourceName}/server.lua`, serverMatch ? serverMatch[1].trim() : "-- server.lua padrão BuckAI");
           }
           
-          // 3. Garantir fxmanifest.lua
           if (!filesFound["fxmanifest.lua"]) {
-            zip.file(`${resourceName}/fxmanifest.lua`, `fx_version 'cerulean'\ngame 'gta5'\n\ndescription 'Gerado por BuckAI'\nauthor 'BuckAI'\n\nclient_script 'client.lua'\nserver_script 'server.lua'\nshared_script 'config.lua'`);
+            const manifestMatch = code.match(/(?:fxmanifest\.lua|MANIFEST):?([\s\S]*?)(?=(?:client\.lua|CLIENT|server\.lua|SERVER|config\.lua|CONFIG|$))/i);
+            zip.file(`${resourceName}/fxmanifest.lua`, manifestMatch ? manifestMatch[1].trim() : `fx_version 'cerulean'\ngame 'gta5'\ndescription 'Gerado por BuckAI'\nauthor 'BuckAI'\nclient_script 'client.lua'\nserver_script 'server.lua'\nshared_script 'config.lua'`);
           }
           
-          // 4. Garantir config.lua
           if (!filesFound["config.lua"]) {
-            zip.file(`${resourceName}/config.lua`, "-- config.lua para ajustes rápidos");
+            const configMatch = code.match(/(?:config\.lua|CONFIG):?([\s\S]*?)(?=(?:client\.lua|CLIENT|server\.lua|SERVER|fxmanifest\.lua|MANIFEST|$))/i);
+            zip.file(`${resourceName}/config.lua`, configMatch ? configMatch[1].trim() : "-- config.lua padrão BuckAI");
           }
 
-          // 5. Inteligência NUI: Se a IA sugerir interface mas não criar os arquivos
-          const needsNUI = code.toLowerCase().includes("nui") || code.toLowerCase().includes("html") || code.toLowerCase().includes("display");
-          if (needsNUI) {
-            if (!filesFound["html/index.html"]) zip.file(`${resourceName}/html/index.html`, "<!DOCTYPE html>\n<html>\n<head>\n<link rel='stylesheet' href='style.css'>\n</head>\n<body>\n    <div id='container'>\n        <h1>BuckAI NUI</h1>\n    </div>\n    <script src='script.js'></script>\n</body>\n</html>");
-            if (!filesFound["html/style.css"]) zip.file(`${resourceName}/html/style.css`, "/* BuckAI Style */\nbody { margin: 0; display: none; }");
-            if (!filesFound["html/script.js"]) zip.file(`${resourceName}/html/script.js`, "// BuckAI NUI Logic\nwindow.addEventListener('message', (event) => {\n    // handle events\n});");
+          // Inteligência NUI: Criar pastas html/ se detectado
+          if (code.toLowerCase().includes("html") || code.toLowerCase().includes("nui") || code.toLowerCase().includes("css")) {
+            if (!filesFound["html/index.html"] && !filesFound["index.html"]) {
+              zip.file(`${resourceName}/html/index.html`, "<!DOCTYPE html>\n<html><head><link rel='stylesheet' href='style.css'></head><body><script src='script.js'></script></body></html>");
+            }
+            if (!filesFound["html/style.css"] && !filesFound["style.css"]) {
+              zip.file(`${resourceName}/html/style.css`, "/* Style gerado por BuckAI */");
+            }
+            if (!filesFound["html/script.js"] && !filesFound["script.js"]) {
+              zip.file(`${resourceName}/html/script.js`, "// JS gerado por BuckAI");
+            }
           }
         }
       }
