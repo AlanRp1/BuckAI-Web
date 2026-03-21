@@ -456,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Inicialização ---
-  console.log("%c BuckAI v1.9 - Sistema de Pagamento v2 Ativo ", "background: #7c3aed; color: white; font-weight: bold; padding: 4px;");
+  console.log("%c BuckAI v2.1 - Termos e Sistema Ativos ", "background: #7c3aed; color: white; font-weight: bold; padding: 4px;");
   
   // Função para você resetar seu usuário e testar o fluxo do zero
   window.resetarMeuUsuario = () => {
