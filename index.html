@@ -393,6 +393,12 @@
         </div>
     </div>
 
+    <!-- INJEÇÃO DE ELEMENTO DUMMY PARA PREVENIR CRASH DE SCRIPTS ANTIGOS -->
+    <div id="verifySubBtn" style="display:none;"></div>
+    <div id="activeNow" style="display:none;"></div>
+    <div id="totalScripts" style="display:none;"></div>
+    <div id="totalClients" style="display:none;"></div>
+
     <script src="script.js?v=2.1"></script>
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
