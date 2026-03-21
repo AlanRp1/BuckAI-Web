@@ -1,74 +1,64 @@
-// NOVO MÓDULO DE EVOLUÇÃO DE UI E VISIBILIDADE
-// OBJETIVO: Garantir que o ID, a Engrenagem e o Painel Admin estejam visíveis e funcionando.
+// NOVO MÓDULO DE EVOLUÇÃO DE UI E VISIBILIDADE v3.0
+// OBJETIVO: Forçar a exibição do ID, Engrenagem e Admin contra o override do script original.
 
-export const UIFeaturesV2 = {
-    async syncUserData() {
-        const data = JSON.parse(localStorage.getItem('buckai_user_data')) || {};
+export const UIFeaturesV3 = {
+    sync() {
+        const dataStr = localStorage.getItem('buckai_user_data');
+        if (!dataStr) return;
+
+        const data = JSON.parse(dataStr);
+        if (!data.username) return;
+
+        // Elementos Críticos
         const userInfoBar = document.getElementById('userInfo');
         const welcomeUser = document.getElementById('welcomeUser');
-        const userAvatar = document.getElementById('userAvatar');
-        const userCredits = document.getElementById('userCredits');
         const adminPanelBtn = document.getElementById('adminPanelBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
 
-        if (!data.username) {
-            console.log("[UIFeaturesV2] Usuário não logado. Mantendo UI original.");
-            return;
-        }
-
-        console.log("[UIFeaturesV2] Sincronizando UI para o usuário:", data.username);
-
-        // Garantir visibilidade da barra de usuário
-        if (userInfoBar) {
+        // 1. Forçar a barra a aparecer (Anti-Override)
+        if (userInfoBar && userInfoBar.classList.contains('hidden')) {
+            console.log("[UIFeaturesV3] Forçando visibilidade da barra de usuário...");
             userInfoBar.classList.remove('hidden');
-            userInfoBar.style.display = 'flex'; // Forçar display
+            userInfoBar.style.display = 'flex';
         }
 
-        // Atualizar textos e créditos
-        if (welcomeUser) welcomeUser.textContent = `BEM-VINDO, ${data.username.toUpperCase()}`;
-        if (userAvatar && data.avatar) userAvatar.src = data.avatar;
-        if (userCredits) userCredits.textContent = data.isPremium ? "∞" : (data.credits || 0);
-
-        // Evolução: Adicionar o ID diretamente ao lado do nome na barra principal para fácil visualização
-        if (welcomeUser && data.id) {
-            if (!document.getElementById('v2-id-badge')) {
+        // 2. Garantir o ID no topo
+        if (welcomeUser) {
+            if (!welcomeUser.textContent.includes(data.username.toUpperCase())) {
+                welcomeUser.textContent = `BEM-VINDO, ${data.username.toUpperCase()}`;
+            }
+            if (!document.getElementById('v2-id-badge') && data.id) {
                 const idBadge = document.createElement('span');
                 idBadge.id = 'v2-id-badge';
                 idBadge.className = 'id-badge';
                 idBadge.style.marginLeft = '10px';
-                idBadge.style.fontSize = '0.7rem';
-                idBadge.style.padding = '2px 6px';
-                idBadge.style.background = 'rgba(124, 58, 237, 0.2)';
-                idBadge.style.border = '1px solid var(--accent-neon)';
-                idBadge.style.borderRadius = '4px';
                 idBadge.textContent = data.id;
                 welcomeUser.appendChild(idBadge);
             }
         }
 
-        // Mostrar aba Admin se for Admin (V2 force)
+        // 3. Forçar Painel Admin
         if (adminPanelBtn && (data.isAdmin || data.username === 'buck__ai')) {
             adminPanelBtn.classList.remove('hidden');
             adminPanelBtn.style.display = 'block';
         }
 
-        // Garantir que a Engrenagem funcione (re-bind caso o clone falhe)
-        const settingsBtn = document.getElementById('settingsBtn');
+        // 4. Garantir funcionalidade da Engrenagem
         if (settingsBtn) {
-            // Se o user-id-fix.js já clonou, esse listener será adicionado ao novo
-            settingsBtn.addEventListener('click', () => {
-                const modal = document.getElementById('settingsModal');
-                if (modal) modal.classList.remove('hidden');
-                
-                // Atualizar ID no modal também
-                const modalId = document.getElementById('userIdDisplay');
-                if (modalId && data.id) modalId.textContent = data.id;
-            });
+            settingsBtn.style.display = 'block';
+            settingsBtn.style.opacity = '1';
+            settingsBtn.style.pointerEvents = 'auto';
         }
     }
 };
 
-// Inicialização segura
+// Rodar em loop agressivo para evitar que o script original oculte as coisas
 document.addEventListener('DOMContentLoaded', () => {
-    // Pequeno delay para garantir que o script.js original já rodou seu updateUI
-    setTimeout(() => UIFeaturesV2.syncUserData(), 800);
+    console.log("[UIFeaturesV3] Iniciando loop de visibilidade...");
+    
+    // Sincronização inicial rápida
+    UIFeaturesV3.sync();
+
+    // Loop de proteção (roda a cada 500ms para manter os elementos visíveis)
+    setInterval(() => UIFeaturesV3.sync(), 500);
 });
