@@ -470,13 +470,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
           const resourceName = filename.replace('script_', '');
           
-          zip.file(`${resourceName}/client.lua`, clientCode);
-          if (serverCode) zip.file(`${resourceName}/server.lua`, serverCode);
-          if (configCode) zip.file(`${resourceName}/config.lua`, configCode);
+          zip.file(`${resourceName}/client.lua`, clientCode || "-- client.lua gerado por BuckAI");
+          zip.file(`${resourceName}/server.lua`, serverCode || "-- server.lua (sem necessidade de código de servidor para este script)");
+          zip.file(`${resourceName}/config.lua`, configCode || "-- config.lua (use este arquivo para configurações personalizadas)");
           
           let manifestContent = `fx_version 'cerulean'\ngame 'gta5'\n\ndescription 'Gerado por BuckAI'\nauthor 'BuckAI'\n\nclient_script 'client.lua'\n`;
-          if (serverCode) manifestContent += `server_script 'server.lua'\n`;
-          if (configCode) manifestContent += `shared_script 'config.lua'\n`;
+          manifestContent += `server_script 'server.lua'\n`;
+          manifestContent += `shared_script 'config.lua'\n`;
           
           zip.file(`${resourceName}/fxmanifest.lua`, manifestContent);
         } else {
