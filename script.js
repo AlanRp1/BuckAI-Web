@@ -365,7 +365,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("O servidor não reconheceu a rota /api/humanize. Por favor, rode 'vercel --prod' novamente.");
+        const errorText = await response.text();
+        console.error("Resposta não-JSON recebida:", errorText);
+        throw new Error("O servidor não reconheceu a rota /api/humanize. O deploy pode ainda não ter sido concluído.");
       }
 
       const data = await response.json();
