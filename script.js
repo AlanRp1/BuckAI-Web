@@ -451,47 +451,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      // Criar o arquivo ZIP usando JSZip
       const zip = new JSZip();
       
-      // Definir a estrutura de pastas baseada na plataforma
-      let finalPath = "";
-      if (activeBtn && activeBtn.id === 'gamerModeBtn') {
+      // Regex para extrair blocos de arquivos --- [caminho/arquivo] ---
+      const fileRegex = /--- (.*?) ---([\s\S]*?)(?=--- .*? ---|$)/g;
+      let match;
+      let hasFiles = false;
+
+      while ((match = fileRegex.exec(code)) !== null) {
+        const filePath = match[1].trim();
+        const fileContent = match[2].trim();
+        if (filePath && fileContent) {
+          zip.file(filePath, fileContent);
+          hasFiles = true;
+        }
+      }
+
+      // Se a IA não seguiu o formato estrito, tenta o fallback para FiveM
+      if (!hasFiles && activeBtn && activeBtn.id === 'gamerModeBtn') {
         const platform = Array.from(platformRadios).find(r => r.checked)?.value || 'FiveM';
         if (platform === 'FiveM') {
-          // Tentar extrair CLIENT, SERVER e CONFIG do código gerado
           const clientMatch = code.match(/--- CLIENT ---([\s\S]*?)(?:--- SERVER ---|--- CONFIG ---|$)/);
           const serverMatch = code.match(/--- SERVER ---([\s\S]*?)(?:--- CLIENT ---|--- CONFIG ---|$)/);
           const configMatch = code.match(/--- CONFIG ---([\s\S]*?)(?:--- CLIENT ---|--- SERVER ---|$)/);
 
-          const clientCode = clientMatch ? clientMatch[1].trim() : code;
-          const serverCode = serverMatch ? serverMatch[1].trim() : "";
-          const configCode = configMatch ? configMatch[1].trim() : "";
-
-          const resourceName = filename.replace('script_', '');
-          
-          zip.file(`${resourceName}/client.lua`, clientCode || "-- client.lua gerado por BuckAI");
-          zip.file(`${resourceName}/server.lua`, serverCode || "-- server.lua (sem necessidade de código de servidor para este script)");
-          zip.file(`${resourceName}/config.lua`, configCode || "-- config.lua (use este arquivo para configurações personalizadas)");
-          
-          let manifestContent = `fx_version 'cerulean'\ngame 'gta5'\n\ndescription 'Gerado por BuckAI'\nauthor 'BuckAI'\n\nclient_script 'client.lua'\n`;
-          manifestContent += `server_script 'server.lua'\n`;
-          manifestContent += `shared_script 'config.lua'\n`;
-          
-          zip.file(`${resourceName}/fxmanifest.lua`, manifestContent);
-        } else {
-          // Estrutura SA-MP: filterscripts/[name].pwn
-          zip.file(`filterscripts/${filename}.pwn`, code);
+          zip.file(`client.lua`, clientMatch ? clientMatch[1].trim() : code);
+          zip.file(`server.lua`, serverMatch ? serverMatch[1].trim() : "-- server.lua");
+          zip.file(`config.lua`, configMatch ? configMatch[1].trim() : "-- config.lua");
+          zip.file(`fxmanifest.lua`, `fx_version 'cerulean'\ngame 'gta5'\nclient_script 'client.lua'\nserver_script 'server.lua'\nshared_script 'config.lua'`);
+          hasFiles = true;
         }
-      } else {
-        // Outros modos: Apenas o arquivo na raiz do ZIP
+      }
+
+      if (!hasFiles) {
         zip.file(`${filename}.${extension}`, code);
       }
       
-      // Adicionar um README informativo
-      zip.file("README_BUCKAI.txt", `BuckAI - O Futuro dos Scripts\n\nProjeto: ${folderName}\nData: ${new Date().toLocaleString()}\nInstruções: Extraia a pasta diretamente no seu servidor.`);
+      zip.file("README_BUCKAI.txt", `BuckAI - Geração Profissional\n\nProjeto: ${folderName}\nData: ${new Date().toLocaleString()}\nInstruções: Extraia a estrutura completa para o seu ambiente de desenvolvimento.`);
 
-      // Gerar o arquivo ZIP e disparar o download
       const content = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
