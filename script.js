@@ -452,58 +452,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
       const zip = new JSZip();
+      const resourceName = filename.replace('script_', '') || 'buckai_resource';
       
-      // Regex para extrair blocos de arquivos --- [caminho/arquivo] ---
-      const fileRegex = /--- (.*?) ---([\s\S]*?)(?=--- .*? ---|$)/g;
+      // Regex ultra-robusta para capturar blocos --- [nome] --- ou --- [caminho/nome] ---
+      const fileRegex = /--- (.*?) ---([\s\S]*?)(?=---|$)/g;
       let match;
-      let hasFiles = false;
+      let filesFound = {};
 
       while ((match = fileRegex.exec(code)) !== null) {
-        const filePath = match[1].trim();
-        const fileContent = match[2].trim();
-        if (filePath && fileContent) {
-          zip.file(filePath, fileContent);
-          hasFiles = true;
-        }
+        let filePath = match[1].trim();
+        let fileContent = match[2].trim();
+        
+        // Normalizar caminhos (remover barras iniciais, etc)
+        filePath = filePath.replace(/^\/+/, '');
+        filesFound[filePath.toLowerCase()] = fileContent;
+        
+        // Adicionar ao ZIP dentro da pasta do recurso
+        zip.file(`${resourceName}/${filePath}`, fileContent);
       }
 
-      // Se a IA não seguiu o formato estrito, tenta o fallback para FiveM
+      // FALLBACK DE SEGURANÇA: Se for FiveM, garantir os arquivos OBRIGATÓRIOS
       if (activeBtn && activeBtn.id === 'gamerModeBtn') {
         const platform = Array.from(platformRadios).find(r => r.checked)?.value || 'FiveM';
+        
         if (platform === 'FiveM') {
-          // Garantir arquivos essenciais
-          if (!zip.file("client.lua")) {
-            const clientMatch = code.match(/--- (?:.*?client\.lua|CLIENT) ---([\s\S]*?)(?=---|$)/i);
-            zip.file("client.lua", clientMatch ? clientMatch[1].trim() : code);
+          // 1. Garantir client.lua
+          if (!filesFound["client.lua"]) {
+            zip.file(`${resourceName}/client.lua`, code.includes("---") ? "-- código client não identificado" : code);
           }
-          if (!zip.file("server.lua")) {
-            const serverMatch = code.match(/--- (?:.*?server\.lua|SERVER) ---([\s\S]*?)(?=---|$)/i);
-            zip.file("server.lua", serverMatch ? serverMatch[1].trim() : "-- server.lua gerado automaticamente por BuckAI");
+          
+          // 2. Garantir server.lua
+          if (!filesFound["server.lua"]) {
+            zip.file(`${resourceName}/server.lua`, "-- server.lua gerado automaticamente por BuckAI");
           }
-          if (!zip.file("fxmanifest.lua")) {
-            const manifestMatch = code.match(/--- (?:.*?fxmanifest\.lua|MANIFEST) ---([\s\S]*?)(?=---|$)/i);
-            zip.file("fxmanifest.lua", manifestMatch ? manifestMatch[1].trim() : `fx_version 'cerulean'\ngame 'gta5'\n\ndescription 'Gerado por BuckAI'\nauthor 'BuckAI'\n\nclient_script 'client.lua'\nserver_script 'server.lua'\nshared_script 'config.lua'`);
+          
+          // 3. Garantir fxmanifest.lua
+          if (!filesFound["fxmanifest.lua"]) {
+            zip.file(`${resourceName}/fxmanifest.lua`, `fx_version 'cerulean'\ngame 'gta5'\n\ndescription 'Gerado por BuckAI'\nauthor 'BuckAI'\n\nclient_script 'client.lua'\nserver_script 'server.lua'\nshared_script 'config.lua'`);
           }
-          if (!zip.file("config.lua")) {
-            const configMatch = code.match(/--- (?:.*?config\.lua|CONFIG) ---([\s\S]*?)(?=---|$)/i);
-            zip.file("config.lua", configMatch ? configMatch[1].trim() : "-- config.lua para ajustes rapidos");
+          
+          // 4. Garantir config.lua
+          if (!filesFound["config.lua"]) {
+            zip.file(`${resourceName}/config.lua`, "-- config.lua para ajustes rápidos");
           }
 
-          // Se a IA mencionou NUI mas não criou os arquivos, cria a base
-          if (code.toLowerCase().includes("nui") || code.toLowerCase().includes("html")) {
-            if (!zip.file("html/index.html")) zip.file("html/index.html", "<!DOCTYPE html>\n<html>\n<head>\n<link rel='stylesheet' href='style.css'>\n</head>\n<body>\n<script src='script.js'></script>\n</body>\n</html>");
-            if (!zip.file("html/style.css")) zip.file("html/style.css", "/* NUI Style */");
-            if (!zip.file("html/script.js")) zip.file("html/script.js", "// NUI Script");
+          // 5. Inteligência NUI: Se a IA sugerir interface mas não criar os arquivos
+          const needsNUI = code.toLowerCase().includes("nui") || code.toLowerCase().includes("html") || code.toLowerCase().includes("display");
+          if (needsNUI) {
+            if (!filesFound["html/index.html"]) zip.file(`${resourceName}/html/index.html`, "<!DOCTYPE html>\n<html>\n<head>\n<link rel='stylesheet' href='style.css'>\n</head>\n<body>\n    <div id='container'>\n        <h1>BuckAI NUI</h1>\n    </div>\n    <script src='script.js'></script>\n</body>\n</html>");
+            if (!filesFound["html/style.css"]) zip.file(`${resourceName}/html/style.css`, "/* BuckAI Style */\nbody { margin: 0; display: none; }");
+            if (!filesFound["html/script.js"]) zip.file(`${resourceName}/html/script.js`, "// BuckAI NUI Logic\nwindow.addEventListener('message', (event) => {\n    // handle events\n});");
           }
-          hasFiles = true;
         }
       }
 
-      if (!hasFiles) {
-        zip.file(`${filename}.${extension}`, code);
+      // Se nenhum arquivo foi encontrado via regex, coloca o código bruto como client.lua (último recurso)
+      if (Object.keys(filesFound).length === 0) {
+        zip.file(`${resourceName}/client.lua`, code);
+        zip.file(`${resourceName}/fxmanifest.lua`, `fx_version 'cerulean'\ngame 'gta5'\nclient_script 'client.lua'`);
       }
       
-      zip.file("README_BUCKAI.txt", `BuckAI - Geração Profissional\n\nProjeto: ${folderName}\nData: ${new Date().toLocaleString()}\nInstruções: Extraia a estrutura completa para o seu ambiente de desenvolvimento.`);
+      zip.file(`${resourceName}/README_BUCKAI.txt`, `BuckAI - PROJETO COMPLETO\n\nResource: ${resourceName}\nData: ${new Date().toLocaleString()}\n\nESTRUTURA GARANTIDA:\n- client.lua\n- server.lua\n- config.lua\n- fxmanifest.lua\n- html/ (se aplicável)`);
 
       const content = await zip.generateAsync({ type: "blob" });
       const url = URL.createObjectURL(content);
