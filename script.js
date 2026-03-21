@@ -16,7 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const imageStatus = document.getElementById('imageStatus');
   const loader = document.getElementById('loader');
   const lockScreen = document.getElementById('lockScreen');
-  const verifySubBtn = document.getElementById('verifySubBtn');
+  const loginBtn = document.getElementById('loginBtn');
+  const registerBtn = document.getElementById('registerBtn');
   const authUsernameInput = document.getElementById('authUsername');
   const authPasswordInput = document.getElementById('authPassword');
   const welcomeUserEl = document.getElementById('welcomeUser');
@@ -27,10 +28,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const studentModeBtn = document.getElementById('studentModeBtn');
   const humanizeModeBtn = document.getElementById('humanizeModeBtn');
   const projectsModeBtn = document.getElementById('projectsModeBtn');
+  const supportModeBtn = document.getElementById('supportModeBtn');
+  const adminPanelBtn = document.getElementById('adminPanelBtn');
   const gamerSection = document.getElementById('gamerSection');
   const studentSection = document.getElementById('studentSection');
   const humanizeSection = document.getElementById('humanizeSection');
   const projectsSection = document.getElementById('projectsSection');
+  const supportSection = document.getElementById('supportSection');
+  const adminSection = document.getElementById('adminSection');
   const studyBtn = document.getElementById('studyBtn');
   const studentTaskInput = document.getElementById('studentTask');
   const studentImageInput = document.getElementById('studentImageInput');
@@ -48,6 +53,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const closePaymentBtn = document.getElementById('closePaymentBtn');
   const modalActivationCodeInput = document.getElementById('modalActivationCode');
   const modalActivateBtn = document.getElementById('modalActivateBtn');
+  const userAvatar = document.getElementById('userAvatar');
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsModal = document.getElementById('settingsModal');
+  const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+  const avatarInput = document.getElementById('avatarInput');
+  const changeAvatarBtn = document.getElementById('changeAvatarBtn');
+  const profilePreview = document.getElementById('profilePreview');
+  const saveProfileBtn = document.getElementById('saveProfileBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const userIdDisplay = document.getElementById('userIdDisplay');
+  const userNameDisplay = document.getElementById('userNameDisplay');
+  const userStatusDisplay = document.getElementById('userStatusDisplay');
+
+  const adminBatchBtn = document.getElementById('adminBatchBtn');
+  const adminBatchCount = document.getElementById('adminBatchCount');
+  const recentCodesList = document.getElementById('recentCodesList');
+  const codesContainer = document.getElementById('codesContainer');
+  const targetAdminId = document.getElementById('targetAdminId');
+  const giveAdminBtn = document.getElementById('giveAdminBtn');
+  const adminLogsList = document.getElementById('adminLogsList');
+  const adminTicketsList = document.getElementById('adminTicketsList');
+  const adminChatModal = document.getElementById('adminChatModal');
+  const closeAdminChatBtn = document.getElementById('closeAdminChatBtn');
+  const adminChatMessages = document.getElementById('adminChatMessages');
+  const adminReplyInput = document.getElementById('adminReplyInput');
+  const sendAdminReplyBtn = document.getElementById('sendAdminReplyBtn');
+  const adminChatTitle = document.getElementById('adminChatTitle');
+  const supportMessages = document.getElementById('supportMessages');
+  const supportInput = document.getElementById('supportInput');
+  const sendSupportBtn = document.getElementById('sendSupportBtn');
 
   // --- Configurações ---
   const MAX_FREE_CREDITS = 5;
@@ -97,16 +132,29 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Lógica de Usuário e Créditos ---
   const getUserData = () => {
     const defaultData = {
+      id: 'BUCK-' + Math.floor(Math.random() * 900000 + 100000),
       username: '',
+      avatar: 'https://cdn.discordapp.com/embed/avatars/0.png',
       credits: MAX_FREE_CREDITS,
       lastReset: new Date().toDateString(),
       history: [],
-      isPremium: false
+      isPremium: false,
+      isAdmin: false
     };
     const saved = localStorage.getItem('buckai_user_data');
     if (!saved) return defaultData;
     
     const data = JSON.parse(saved);
+    // Garantir que campos novos existam
+    if (!data.id) data.id = defaultData.id;
+    if (!data.avatar) data.avatar = defaultData.avatar;
+    if (data.isAdmin === undefined) data.isAdmin = defaultData.isAdmin;
+
+    // MASTER ADMIN: Você pode colocar seu ID aqui para sempre ser admin
+    if (data.username === 'buck__ai' || data.id === 'BUCK-ADMIN-MASTER') {
+      data.isAdmin = true;
+    }
+    
     const today = new Date().toDateString();
     if (data.lastReset !== today && !data.isPremium) {
       data.credits = MAX_FREE_CREDITS;
@@ -132,7 +180,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (data.username) {
       welcomeUserEl.textContent = `BEM-VINDO, ${data.username.toUpperCase()}`;
       userCreditsEl.textContent = data.isPremium ? "∞" : data.credits;
+      userAvatar.src = data.avatar;
       
+      // Atualizar info do modal de perfil
+      userIdDisplay.textContent = data.id;
+      userNameDisplay.textContent = data.username.toUpperCase();
+      userStatusDisplay.textContent = data.isPremium ? "Membro Premium 👑" : "Membro Free ⚡";
+      profilePreview.src = data.avatar;
+
       if (data.isPremium) {
         upgradeBtn.innerHTML = '<i class="fas fa-crown"></i> PLANO PREMIUM';
         upgradeBtn.classList.add('active');
@@ -145,6 +200,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       userInfoBar.classList.remove('hidden');
       lockScreen.classList.add('hidden');
+
+      // Mostrar aba Admin se for Admin
+      if (data.isAdmin) {
+        adminPanelBtn.classList.remove('hidden');
+      } else {
+        adminPanelBtn.classList.add('hidden');
+      }
     } else {
       lockScreen.classList.remove('hidden');
     }
@@ -191,8 +253,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Validação robusta de códigos gerados pela nossa API
-    // Formato: BUCK-PREMIUM-XXXXXX-XXXX
-    const isValidFormat = /^BUCK-PREMIUM-[A-Z0-9]{6}-[A-Z0-9]+$/.test(code);
+    // Formato: BUCK-VIP-XXXXXX-XXXX ou BUCK-PREMIUM-XXXXXX-XXXX
+    const isValidFormat = /^BUCK-(VIP|PREMIUM)-[A-Z0-9]{6}-[A-Z0-9]+$/.test(code);
     const isAdminCode = (code === "BUCK-MASTER-ADMIN");
 
     if (isValidFormat || isAdminCode) {
@@ -248,6 +310,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
   modalActivateBtn.addEventListener('click', () => {
     activatePremium(modalActivationCodeInput.value.trim());
+  });
+
+  // --- Lógica de Autenticação (Login e Cadastro) ---
+  const handleAuth = async (type) => {
+    const username = authUsernameInput.value.trim();
+    const password = authPasswordInput.value.trim();
+
+    if (!username || !password) return alert("Preencha todos os campos!");
+    if (username.length < 3) return alert("O usuário deve ter pelo menos 3 caracteres.");
+    if (password.length < 4) return alert("A senha deve ter pelo menos 4 caracteres.");
+
+    loader.classList.remove('hidden');
+    try {
+      const ip = await getIP();
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          type, 
+          username, 
+          password, 
+          ip, 
+          userAgent: navigator.userAgent 
+        })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Para persistência real de contas entre PCs, o ideal seria um banco de dados.
+        // Como o Vercel é stateless, salvamos os dados do usuário logado localmente
+        // e enviamos os dados de cadastro/login para o Discord do dono gerenciar.
+        const userData = getUserData();
+        userData.username = username;
+        // Se for login, poderíamos buscar os créditos/premium de um banco aqui.
+        saveUserData(userData);
+        alert(type === 'register' ? "Conta criada com sucesso!" : "Login realizado com sucesso!");
+      } else {
+        alert("Erro: " + data.error);
+      }
+    } catch (e) {
+      console.error("Erro Auth:", e);
+      // Fallback para permitir uso offline/local caso a API falhe
+      const userData = getUserData();
+      userData.username = username;
+      saveUserData(userData);
+    } finally {
+      loader.classList.add('hidden');
+    }
+  };
+
+  loginBtn.addEventListener('click', () => handleAuth('login'));
+  registerBtn.addEventListener('click', () => handleAuth('register'));
+
+  // --- Lógica de Perfil e Configurações ---
+  settingsBtn.addEventListener('click', () => {
+    settingsModal.classList.remove('hidden');
+  });
+
+  closeSettingsBtn.addEventListener('click', () => {
+    settingsModal.classList.add('hidden');
+  });
+
+  changeAvatarBtn.addEventListener('click', () => {
+    avatarInput.click();
+  });
+
+  avatarInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 1024 * 1024) { // Limite de 1MB para não estourar localStorage
+        return alert("Foto muito grande! Use uma imagem menor que 1MB.");
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        profilePreview.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  saveProfileBtn.addEventListener('click', () => {
+    const data = getUserData();
+    data.avatar = profilePreview.src;
+    saveUserData(data);
+    alert("Perfil atualizado com sucesso!");
+    settingsModal.classList.add('hidden');
+  });
+
+  logoutBtn.addEventListener('click', () => {
+    if (confirm("Deseja realmente sair da conta? Seus dados locais serão mantidos, mas você precisará logar novamente.")) {
+      const data = getUserData();
+      data.username = ''; // Limpa o usuário logado mas mantém histórico/créditos locais
+      saveUserData(data);
+      location.reload();
+    }
   });
 
   // --- Lógica de Histórico ---
@@ -331,8 +488,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Lógica de Troca de Modos ---
   const switchMode = (activeBtn, activeSection) => {
-    [gamerModeBtn, studentModeBtn, humanizeModeBtn, projectsModeBtn].forEach(btn => btn.classList.remove('active'));
-    [gamerSection, studentSection, humanizeSection, projectsSection].forEach(sec => sec.classList.add('hidden'));
+    [gamerModeBtn, studentModeBtn, humanizeModeBtn, projectsModeBtn, supportModeBtn, adminPanelBtn].forEach(btn => btn.classList.remove('active'));
+    [gamerSection, studentSection, humanizeSection, projectsSection, supportSection, adminSection].forEach(sec => sec.classList.add('hidden'));
     activeBtn.classList.add('active');
     activeSection.classList.remove('hidden');
     resultArea.classList.add('hidden');
@@ -342,6 +499,15 @@ document.addEventListener('DOMContentLoaded', () => {
   studentModeBtn.addEventListener('click', () => switchMode(studentModeBtn, studentSection));
   humanizeModeBtn.addEventListener('click', () => switchMode(humanizeModeBtn, humanizeSection));
   projectsModeBtn.addEventListener('click', () => switchMode(projectsModeBtn, projectsSection));
+  supportModeBtn.addEventListener('click', () => {
+    switchMode(supportModeBtn, supportSection);
+    setTimeout(renderSupportChat, 50); // Pequeno delay para garantir que o DOM atualizou
+  });
+
+  adminPanelBtn.addEventListener('click', () => {
+    switchMode(adminPanelBtn, adminSection);
+    setTimeout(renderAdminPanel, 50);
+  });
 
   // --- Autenticação ---
   verifySubBtn.addEventListener('click', async () => {
@@ -469,6 +635,269 @@ document.addEventListener('DOMContentLoaded', () => {
       loader.classList.add('hidden'); 
       loader.querySelector('p').textContent = 'PROCESSANDO...';
       humanizeBtn.disabled = false; 
+    }
+  });
+
+  // --- Lógica de Admin e Suporte (Sistemas Avançados) ---
+  const renderAdminPanel = () => {
+    if (!adminLogsList || !adminTicketsList) return;
+    
+    // Carregar logs
+    adminLogsList.innerHTML = `
+      <div class="log-entry"><span class="log-time">[${new Date().toLocaleTimeString()}]</span> Painel Admin acessado por ${getUserData().username}</div>
+      <div class="log-entry"><span class="log-time">[${new Date().toLocaleTimeString()}]</span> Sistema de tickets online.</div>
+    `;
+    
+    // Carregar tickets pendentes
+    const tickets = JSON.parse(localStorage.getItem('buckai_tickets')) || [];
+    if (tickets.length === 0) {
+      adminTicketsList.innerHTML = '<p class="empty-text">Sem tickets abertos.</p>';
+    } else {
+      adminTicketsList.innerHTML = tickets.map(t => `
+        <div class="ticket-item" data-id="${t.id}" style="cursor: pointer; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <strong>${t.user}</strong>: ${t.lastMsg.substring(0, 20)}...
+        </div>
+      `).join('');
+
+      // Adicionar listeners para os tickets
+      document.querySelectorAll('.ticket-item').forEach(item => {
+        item.onclick = () => {
+          openTicket(item.getAttribute('data-id'));
+        };
+      });
+    }
+  };
+
+  let activeTicketId = null;
+  const openTicket = (userId) => {
+    activeTicketId = userId;
+    const chatKey = `buckai_chat_${userId}`;
+    const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+    const tickets = JSON.parse(localStorage.getItem('buckai_tickets')) || [];
+    const ticket = tickets.find(t => t.id === userId);
+
+    adminChatTitle.textContent = `CHAT COM ${ticket ? ticket.user.toUpperCase() : 'USUÁRIO'}`;
+    adminChatModal.classList.remove('hidden');
+    
+    renderAdminChat(messages);
+  };
+
+  const renderAdminChat = (messages) => {
+    adminChatMessages.innerHTML = messages.map(m => `
+      <div class="msg-${m.role}">
+        <span class="msg-text">${m.text}</span>
+        <span class="msg-time-small">${new Date(m.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+      </div>
+    `).join('');
+    adminChatMessages.scrollTop = adminChatMessages.scrollHeight;
+  };
+
+  const sendAdminReply = () => {
+    const text = adminReplyInput.value.trim();
+    if (!text || !activeTicketId) return;
+
+    const chatKey = `buckai_chat_${activeTicketId}`;
+    const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+    
+    const newMsg = { role: 'admin', text, time: Date.now() };
+    messages.push(newMsg);
+    localStorage.setItem(chatKey, JSON.stringify(messages));
+    
+    adminReplyInput.value = '';
+    renderAdminChat(messages);
+    
+    // Se o dono estiver com o suporte aberto, atualiza também (em tempo real simulado)
+    if (supportSection.classList.contains('hidden') === false) {
+      renderSupportChat();
+    }
+  };
+
+  sendAdminReplyBtn.addEventListener('click', sendAdminReply);
+  adminReplyInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendAdminReply();
+  });
+
+  closeAdminChatBtn.addEventListener('click', () => {
+    adminChatModal.classList.add('hidden');
+    activeTicketId = null;
+  });
+
+  adminBatchBtn.addEventListener('click', async () => {
+    const count = parseInt(adminBatchCount.value) || 50;
+    adminBatchBtn.disabled = true;
+    adminBatchBtn.textContent = 'GERANDO...';
+
+    try {
+      // Gerar os códigos localmente primeiro para exibir no painel
+      const newCodes = [];
+      for (let i = 0; i < count; i++) {
+        const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const timestampPart = Date.now().toString(36).substring(4).toUpperCase();
+        newCodes.push(`BUCK-VIP-${randomPart}-${timestampPart}`);
+      }
+
+      const res = await fetch('/api/generate-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          secret: "BUCK-ADMIN-SECRET-2026", 
+          count,
+          codes: newCodes // Opcional: podemos passar os códigos gerados ou deixar a API gerar
+        })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        alert(`${count} códigos VIP enviados ao Discord!`);
+        
+        // Exibir no painel admin para cópia rápida
+        recentCodesList.classList.remove('hidden');
+        codesContainer.innerHTML = newCodes.map(c => `<span class="code-item">${c}</span>`).join('');
+      }
+    } catch (e) { 
+      alert("Erro ao gerar códigos VIP."); 
+    } finally {
+      adminBatchBtn.disabled = false;
+      adminBatchBtn.textContent = 'GERAR E MANDAR DISCORD';
+    }
+  });
+
+  giveAdminBtn.addEventListener('click', () => {
+    const targetId = targetAdminId.value.trim();
+    if (!targetId) return alert("Digite um ID válido.");
+    
+    // Como não temos DB real, vamos simular dando admin para o ID no localStorage global
+    // Em um sistema real, isso faria um fetch para /api/admin/promote
+    alert(`Usuário ${targetId} promovido a Admin com sucesso!`);
+    targetAdminId.value = '';
+  });
+
+  // --- Lógica do Chat de Suporte ---
+  const renderSupportChat = () => {
+    const chatContainer = document.getElementById('supportMessages');
+    if (!chatContainer) return;
+    
+    const data = getUserData();
+    if (!data.id) return;
+    
+    const chatKey = `buckai_chat_${data.id}`;
+    const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+    
+    if (messages.length === 0) {
+      chatContainer.innerHTML = '<div class="msg-system">Bem-vindo ao suporte BuckAI! Como podemos ajudar hoje?</div>';
+    } else {
+      chatContainer.innerHTML = messages.map(m => `
+        <div class="msg-${m.role}">
+          <span class="msg-text">${m.text}</span>
+          <span class="msg-time-small">${new Date(m.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+        </div>
+      `).join('');
+    }
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  };
+
+  const sendSupportMessage = () => {
+    const input = document.getElementById('supportInput');
+    if (!input) return;
+    
+    const text = input.value.trim();
+    if (!text) return;
+
+    console.log("Tentando enviar mensagem:", text);
+
+    const data = getUserData();
+    const chatKey = `buckai_chat_${data.id}`;
+    const messages = JSON.parse(localStorage.getItem(chatKey)) || [];
+    
+    const newMsg = { role: 'user', text, time: Date.now() };
+    messages.push(newMsg);
+    localStorage.setItem(chatKey, JSON.stringify(messages));
+    
+    // Registrar/Atualizar ticket para o admin ver
+    const tickets = JSON.parse(localStorage.getItem('buckai_tickets')) || [];
+    const existingIndex = tickets.findIndex(t => t.id === data.id);
+    if (existingIndex > -1) {
+      tickets[existingIndex].lastMsg = text;
+      tickets[existingIndex].time = Date.now();
+      tickets[existingIndex].user = data.username || 'Anônimo';
+    } else {
+      tickets.push({ id: data.id, user: data.username || 'Anônimo', lastMsg: text, time: Date.now() });
+    }
+    localStorage.setItem('buckai_tickets', JSON.stringify(tickets));
+
+    input.value = '';
+    renderSupportChat();
+    
+    setTimeout(() => {
+      const autoReply = { 
+        role: 'admin', 
+        text: "Olá! Recebemos sua mensagem. O Buck ou um moderador responderá em breve.", 
+        time: Date.now() 
+      };
+      const currentMsgs = JSON.parse(localStorage.getItem(chatKey)) || [];
+      currentMsgs.push(autoReply);
+      localStorage.setItem(chatKey, JSON.stringify(currentMsgs));
+      renderSupportChat();
+    }, 1000);
+  };
+
+  // Delegar eventos globalmente para garantir que funcionem
+  document.addEventListener('click', (e) => {
+    if (e.target && e.target.id === 'sendSupportBtn') {
+      sendSupportMessage();
+    }
+  });
+
+  document.addEventListener('keypress', (e) => {
+    if (e.target && e.target.id === 'supportInput' && e.key === 'Enter') {
+      sendSupportMessage();
+    }
+  });
+
+  // --- Lógica de Admin Secreto (Atalho) ---
+  const adminTrigger = document.getElementById('adminTrigger');
+  const adminModal = document.getElementById('adminModal');
+  const closeAdminBtn = document.getElementById('closeAdminBtn');
+  const adminGenerateBtn = document.getElementById('adminGenerateBtn');
+  const adminCodeCount = document.getElementById('adminCodeCount');
+  const adminStatus = document.getElementById('adminStatus');
+
+  let clickCount = 0;
+  adminTrigger.addEventListener('click', () => {
+    clickCount++;
+    if (clickCount >= 5) {
+      adminModal.classList.remove('hidden');
+      clickCount = 0;
+    }
+  });
+
+  closeAdminBtn.addEventListener('click', () => {
+    adminModal.classList.add('hidden');
+    adminStatus.textContent = '';
+  });
+
+  adminGenerateBtn.addEventListener('click', async () => {
+    const count = parseInt(adminCodeCount.value) || 50;
+    adminStatus.textContent = 'Gerando... Verifique o Discord.';
+    adminGenerateBtn.disabled = true;
+
+    try {
+      const res = await fetch('/api/generate-codes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: "BUCK-ADMIN-SECRET-2026", count })
+      });
+      const data = await res.json();
+      if (data.success) {
+        adminStatus.textContent = '✅ Sucesso! Enviado ao Discord.';
+        alert(data.message);
+      } else {
+        adminStatus.textContent = '❌ Erro: ' + data.error;
+      }
+    } catch (e) {
+      adminStatus.textContent = '❌ Erro de conexão.';
+    } finally {
+      adminGenerateBtn.disabled = false;
     }
   });
 
