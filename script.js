@@ -423,13 +423,14 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => copyBtn.textContent = 'COPIAR', 2000);
   });
 
-  downloadBtn.addEventListener('click', () => {
+  downloadBtn.addEventListener('click', async () => {
     const code = outputCode.textContent;
     if (!code) return alert('Nenhum código para baixar.');
     
     // Detectar a extensão correta baseada no modo ou conteúdo
     let extension = 'txt';
     let filename = 'script_buckai';
+    let folderName = 'BuckAI_Project';
 
     const activeBtn = document.querySelector('.nav-btn.active');
     if (activeBtn) {
@@ -437,24 +438,73 @@ document.addEventListener('DOMContentLoaded', () => {
         const platform = Array.from(platformRadios).find(r => r.checked)?.value || 'FiveM';
         extension = (platform === 'FiveM') ? 'lua' : 'pwn';
         filename = `script_${platform.toLowerCase()}`;
+        folderName = `BuckAI_Script_${platform}`;
       } else if (activeBtn.id === 'humanizeModeBtn') {
         extension = 'txt';
         filename = 'texto_humanizado';
+        folderName = 'BuckAI_Humanizer';
       } else if (activeBtn.id === 'studentModeBtn') {
         extension = 'txt';
         filename = 'estudo_buckai';
+        folderName = 'BuckAI_Student';
       }
     }
 
-    const blob = new Blob([code], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${filename}.${extension}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      // Criar o arquivo ZIP usando JSZip
+      const zip = new JSZip();
+      
+      // Definir a estrutura de pastas baseada na plataforma
+      let finalPath = "";
+      if (activeBtn && activeBtn.id === 'gamerModeBtn') {
+        const platform = Array.from(platformRadios).find(r => r.checked)?.value || 'FiveM';
+        if (platform === 'FiveM') {
+          // Tentar extrair CLIENT, SERVER e CONFIG do código gerado
+          const clientMatch = code.match(/--- CLIENT ---([\s\S]*?)(?:--- SERVER ---|--- CONFIG ---|$)/);
+          const serverMatch = code.match(/--- SERVER ---([\s\S]*?)(?:--- CLIENT ---|--- CONFIG ---|$)/);
+          const configMatch = code.match(/--- CONFIG ---([\s\S]*?)(?:--- CLIENT ---|--- SERVER ---|$)/);
+
+          const clientCode = clientMatch ? clientMatch[1].trim() : code;
+          const serverCode = serverMatch ? serverMatch[1].trim() : "";
+          const configCode = configMatch ? configMatch[1].trim() : "";
+
+          const resourceName = filename.replace('script_', '');
+          
+          zip.file(`${resourceName}/client.lua`, clientCode);
+          if (serverCode) zip.file(`${resourceName}/server.lua`, serverCode);
+          if (configCode) zip.file(`${resourceName}/config.lua`, configCode);
+          
+          let manifestContent = `fx_version 'cerulean'\ngame 'gta5'\n\ndescription 'Gerado por BuckAI'\nauthor 'BuckAI'\n\nclient_script 'client.lua'\n`;
+          if (serverCode) manifestContent += `server_script 'server.lua'\n`;
+          if (configCode) manifestContent += `shared_script 'config.lua'\n`;
+          
+          zip.file(`${resourceName}/fxmanifest.lua`, manifestContent);
+        } else {
+          // Estrutura SA-MP: filterscripts/[name].pwn
+          zip.file(`filterscripts/${filename}.pwn`, code);
+        }
+      } else {
+        // Outros modos: Apenas o arquivo na raiz do ZIP
+        zip.file(`${filename}.${extension}`, code);
+      }
+      
+      // Adicionar um README informativo
+      zip.file("README_BUCKAI.txt", `BuckAI - O Futuro dos Scripts\n\nProjeto: ${folderName}\nData: ${new Date().toLocaleString()}\nInstruções: Extraia a pasta diretamente no seu servidor.`);
+
+      // Gerar o arquivo ZIP e disparar o download
+      const content = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${folderName}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Erro ao gerar ZIP:", err);
+      alert("Erro ao criar arquivo ZIP. Tente novamente.");
+    }
   });
 
   let selectedImageBase64 = null;
