@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // --- Elementos do DOM com Null-Check ---
+  // --- Elementos do DOM com Null-Check (Proteção Total) ---
   const getEl = (id) => document.getElementById(id);
 
   const activeNowEl = getEl('activeNow');
@@ -67,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const userIdDisplay = getEl('userIdDisplay');
   const userNameDisplay = getEl('userNameDisplay');
   const userStatusDisplay = getEl('userStatusDisplay');
-  const verifySubBtn = getEl('verifySubBtn');
 
   const adminBatchBtn = getEl('adminBatchBtn');
   const adminBatchCount = getEl('adminBatchCount');
@@ -89,6 +88,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Configurações ---
   const MAX_FREE_CREDITS = 5;
+  let selectedImageBase64 = null;
+  let studentImageBase64 = null;
 
   // --- Funções de Utilidade ---
   const getIP = async () => {
@@ -115,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, speed);
   };
 
-  // Simulação de estatísticas estáveis
+  // Simulação de estatísticas estáveis (Correção do "Desprogramado")
   const updateStatsUI = () => {
     try {
       let webStats = JSON.parse(localStorage.getItem('buckai_stats_v3')) || {
@@ -240,154 +241,13 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
   };
 
-  // Listeners com Null-Check
-  if (upgradeBtn) {
-    upgradeBtn.addEventListener('click', () => {
-      const data = getUserData();
-      if (data.isPremium) {
-        alert("Você já é um membro Premium! Aproveite seus benefícios ilimitados.");
-        return;
-      }
-      if (paymentModal) paymentModal.classList.remove('hidden');
-    });
-  }
+  // --- Event Listeners (Proteção contra Null) ---
 
-  if (closePaymentBtn) {
-    closePaymentBtn.addEventListener('click', () => {
-      if (paymentModal) paymentModal.classList.add('hidden');
-    });
-  }
+  // Auth
+  if (loginBtn) loginBtn.onclick = () => handleAuth('login');
+  if (registerBtn) registerBtn.onclick = () => handleAuth('register');
 
-  const activatePremium = (code) => {
-    const data = getUserData();
-    const usedCodes = JSON.parse(localStorage.getItem('buckai_used_codes')) || [];
-    if (usedCodes.includes(code)) {
-      alert("Este código já foi utilizado!");
-      return;
-    }
-    const isValidFormat = /^BUCK-(VIP|PREMIUM)-[A-Z0-9]{6}-[A-Z0-9]+$/.test(code);
-    const isAdminCode = (code === "BUCK-MASTER-ADMIN");
-    if (isValidFormat || isAdminCode) {
-      data.isPremium = true;
-      saveUserData(data);
-      usedCodes.push(code);
-      localStorage.setItem('buckai_used_codes', JSON.stringify(usedCodes));
-      alert("SISTEMA ATUALIZADO! Agora você é BuckAI Premium! 🚀");
-      if (paymentModal) paymentModal.classList.add('hidden');
-    } else {
-      alert("Código de ativação inválido ou formato incorreto.");
-    }
-  };
-
-  if (activateBtn) {
-    activateBtn.addEventListener('click', () => {
-      if (activationCodeInput) activatePremium(activationCodeInput.value.trim());
-    });
-  }
-
-  if (modalActivateBtn) {
-    modalActivateBtn.addEventListener('click', () => {
-      if (modalActivationCodeInput) activatePremium(modalActivationCodeInput.value.trim());
-    });
-  }
-
-  const handleAuth = async (type) => {
-    const username = authUsernameInput?.value.trim();
-    const password = authPasswordInput?.value.trim();
-    if (!username || !password) return alert("Preencha todos os campos!");
-    if (loader) loader.classList.remove('hidden');
-    try {
-      const ip = await getIP();
-      const res = await fetch('/api/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, username, password, ip, userAgent: navigator.userAgent })
-      });
-      const data = await res.json();
-      if (data.success) {
-        const userData = getUserData();
-        userData.username = username;
-        saveUserData(userData);
-        alert(type === 'register' ? "Conta criada com sucesso!" : "Login realizado com sucesso!");
-      } else { alert("Erro: " + data.error); }
-    } catch (e) {
-      const userData = getUserData();
-      userData.username = username;
-      saveUserData(userData);
-    } finally {
-      if (loader) loader.classList.add('hidden');
-    }
-  };
-
-  if (loginBtn) loginBtn.addEventListener('click', () => handleAuth('login'));
-  if (registerBtn) registerBtn.addEventListener('click', () => handleAuth('register'));
-
-  if (settingsBtn) {
-    settingsBtn.addEventListener('click', () => {
-      if (settingsModal) settingsModal.classList.remove('hidden');
-    });
-  }
-
-  if (closeSettingsBtn) {
-    closeSettingsBtn.addEventListener('click', () => {
-      if (settingsModal) settingsModal.classList.add('hidden');
-    });
-  }
-
-  if (changeAvatarBtn) {
-    changeAvatarBtn.addEventListener('click', () => {
-      if (avatarInput) avatarInput.click();
-    });
-  }
-
-  if (avatarInput) {
-    avatarInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        if (file.size > 1024 * 1024) return alert("Foto muito grande!");
-        const reader = new FileReader();
-        reader.onload = (ev) => { if (profilePreview) profilePreview.src = ev.target.result; };
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-
-  if (saveProfileBtn) {
-    saveProfileBtn.addEventListener('click', () => {
-      const data = getUserData();
-      if (profilePreview) data.avatar = profilePreview.src;
-      saveUserData(data);
-      alert("Perfil atualizado!");
-      if (settingsModal) settingsModal.classList.add('hidden');
-    });
-  }
-
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', () => {
-      if (confirm("Deseja realmente sair?")) {
-        const data = getUserData();
-        data.username = '';
-        saveUserData(data);
-        location.reload();
-      }
-    });
-  }
-
-  const renderHistory = () => {
-    const data = getUserData();
-    if (!historyList) return;
-    if (data.history.length === 0) {
-      historyList.innerHTML = `<div class="empty-state"><p>Nenhum projeto ainda.</p></div>`;
-      return;
-    }
-    historyList.innerHTML = data.history.map(item => `
-      <div class="history-item">
-        <h4>${item.title}</h4>
-        <button onclick="viewHistoryItem(${item.id})"><i class="fas fa-eye"></i></button>
-      </div>
-    `).join('');
-  };
-
+  // Modos de Navegação
   const switchMode = (activeBtn, activeSection) => {
     [gamerModeBtn, studentModeBtn, humanizeModeBtn, projectsModeBtn, supportModeBtn, adminPanelBtn].forEach(btn => btn?.classList.remove('active'));
     [gamerSection, studentSection, humanizeSection, projectsSection, supportSection, adminSection].forEach(sec => sec?.classList.add('hidden'));
@@ -396,43 +256,220 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resultArea) resultArea.classList.add('hidden');
   };
 
-  if (gamerModeBtn) gamerModeBtn.addEventListener('click', () => switchMode(gamerModeBtn, gamerSection));
-  if (studentModeBtn) studentModeBtn.addEventListener('click', () => switchMode(studentModeBtn, studentSection));
-  if (humanizeModeBtn) humanizeModeBtn.addEventListener('click', () => switchMode(humanizeModeBtn, humanizeSection));
-  if (projectsModeBtn) projectsModeBtn.addEventListener('click', () => switchMode(projectsModeBtn, projectsSection));
-  if (supportModeBtn) supportModeBtn.addEventListener('click', () => switchMode(supportModeBtn, supportSection));
-  if (adminPanelBtn) adminPanelBtn.addEventListener('click', () => switchMode(adminPanelBtn, adminSection));
+  if (gamerModeBtn) gamerModeBtn.onclick = () => switchMode(gamerModeBtn, gamerSection);
+  if (studentModeBtn) studentModeBtn.onclick = () => switchMode(studentModeBtn, studentSection);
+  if (humanizeModeBtn) humanizeModeBtn.onclick = () => switchMode(humanizeModeBtn, humanizeSection);
+  if (projectsModeBtn) projectsModeBtn.onclick = () => { switchMode(projectsModeBtn, projectsSection); renderHistory(); };
+  if (supportModeBtn) supportModeBtn.onclick = () => { switchMode(supportModeBtn, supportSection); renderSupportChat(); };
+  if (adminPanelBtn) adminPanelBtn.onclick = () => { switchMode(adminPanelBtn, adminSection); renderAdminPanel(); };
 
+  // Funcionalidades de IA
   if (generateBtn) {
-    generateBtn.addEventListener('click', async () => {
+    generateBtn.onclick = async () => {
       const description = descriptionInput?.value.trim();
-      if (!description) return alert('Descreva o script.');
+      const platform = Array.from(platformRadios).find(r => r.checked)?.value || 'FiveM';
+      if (!description && !selectedImageBase64) return alert('Descreva o script ou anexe um erro.');
       if (!useCredit()) return;
       if (loader) loader.classList.remove('hidden');
       try {
+        const ip = await getIP();
         const res = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ description, platform: 'FiveM' })
+          body: JSON.stringify({ description, platform, base64Image: selectedImageBase64, ip })
         });
         const data = await res.json();
         if (resultArea) resultArea.classList.remove('hidden');
         if (outputCode) typeWriter(data.result, outputCode);
+        addToHistory("Script " + platform, description || "Análise de Erro", data.result);
         incrementGlobalScripts();
+        resultArea.scrollIntoView({ behavior: 'smooth' });
       } catch (e) { alert("Erro ao gerar script."); }
       finally { if (loader) loader.classList.add('hidden'); }
-    });
+    };
   }
 
-  if (copyBtn) {
-    copyBtn.addEventListener('click', () => {
-      if (outputCode) {
-        navigator.clipboard.writeText(outputCode.textContent);
-        alert("Copiado!");
-      }
-    });
+  if (studyBtn) {
+    studyBtn.onclick = async () => {
+      const task = studentTaskInput?.value.trim();
+      if (!task && !studentImageBase64) return alert('Digite sua dúvida ou anexe uma foto.');
+      if (!useCredit()) return;
+      if (loader) loader.classList.remove('hidden');
+      try {
+        const ip = await getIP();
+        const res = await fetch('/api/study', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task, base64Image: studentImageBase64, ip })
+        });
+        const data = await res.json();
+        if (resultArea) resultArea.classList.remove('hidden');
+        if (outputCode) typeWriter(data.result, outputCode);
+        addToHistory("Estudo", task || "Exercício", data.result);
+        resultArea.scrollIntoView({ behavior: 'smooth' });
+      } catch (e) { alert("Erro ao obter resposta."); }
+      finally { if (loader) loader.classList.add('hidden'); }
+    };
   }
 
+  if (humanizeBtn) {
+    humanizeBtn.onclick = async () => {
+      const text = humanizeTextInput?.value.trim();
+      const tone = Array.from(humanizeToneRadios).find(r => r.checked)?.value || 'Casual';
+      if (!text) return alert('Cole o texto para humanizar.');
+      if (!useCredit()) return;
+      if (loader) loader.classList.remove('hidden');
+      try {
+        const ip = await getIP();
+        const res = await fetch('/api/humanize', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, tone, ip })
+        });
+        const data = await res.json();
+        if (resultArea) resultArea.classList.remove('hidden');
+        if (outputCode) typeWriter(data.result, outputCode);
+        addToHistory("Humanização", text.substring(0, 30) + "...", data.result);
+        resultArea.scrollIntoView({ behavior: 'smooth' });
+      } catch (e) { alert("Erro ao humanizar."); }
+      finally { if (loader) loader.classList.add('hidden'); }
+    };
+  }
+
+  // Engrenagem e Perfil
+  if (settingsBtn) settingsBtn.onclick = () => settingsModal?.classList.remove('hidden');
+  if (closeSettingsBtn) closeSettingsBtn.onclick = () => settingsModal?.classList.add('hidden');
+  if (logoutBtn) logoutBtn.onclick = () => { if (confirm("Sair?")) { const d = getUserData(); d.username = ''; saveUserData(d); location.reload(); } };
+  
+  if (changeAvatarBtn) changeAvatarBtn.onclick = () => avatarInput?.click();
+  if (avatarInput) {
+    avatarInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file && file.size < 1024 * 1024) {
+        const reader = new FileReader();
+        reader.onload = (ev) => { if (profilePreview) profilePreview.src = ev.target.result; };
+        reader.readAsDataURL(file);
+      } else { alert("Imagem muito grande! Máximo 1MB."); }
+    };
+  }
+  if (saveProfileBtn) {
+    saveProfileBtn.onclick = () => {
+      const d = getUserData();
+      if (profilePreview) d.avatar = profilePreview.src;
+      saveUserData(d);
+      alert("Perfil salvo!");
+      settingsModal?.classList.add('hidden');
+    };
+  }
+
+  // Premium e Pagamento
+  if (upgradeBtn) upgradeBtn.onclick = () => paymentModal?.classList.remove('hidden');
+  if (closePaymentBtn) closePaymentBtn.onclick = () => paymentModal?.classList.add('hidden');
+  if (modalActivateBtn) {
+    modalActivateBtn.onclick = () => {
+      const code = modalActivationCodeInput?.value.trim();
+      if (code) activatePremium(code);
+    };
+  }
+
+  const activatePremium = (code) => {
+    const data = getUserData();
+    const used = JSON.parse(localStorage.getItem('buckai_used_codes')) || [];
+    if (used.includes(code)) return alert("Código já usado!");
+    if (/^BUCK-(VIP|PREMIUM)-[A-Z0-9]{6}-[A-Z0-9]+$/.test(code) || code === "BUCK-MASTER-ADMIN") {
+      data.isPremium = true;
+      saveUserData(data);
+      used.push(code);
+      localStorage.setItem('buckai_used_codes', JSON.stringify(used));
+      alert("PREMIUM ATIVADO! 🚀");
+      paymentModal?.classList.add('hidden');
+    } else { alert("Código inválido."); }
+  };
+
+  // Suporte
+  const renderSupportChat = () => {
+    if (!supportMessages) return;
+    const d = getUserData();
+    const msgs = JSON.parse(localStorage.getItem(`chat_${d.id}`)) || [];
+    supportMessages.innerHTML = msgs.map(m => `<div class="msg-${m.role}"><span class="msg-text">${m.text}</span></div>`).join('');
+    supportMessages.scrollTop = supportMessages.scrollHeight;
+  };
+
+  if (sendSupportBtn) {
+    sendSupportBtn.onclick = () => {
+      const text = supportInput?.value.trim();
+      if (!text) return;
+      const d = getUserData();
+      const msgs = JSON.parse(localStorage.getItem(`chat_${d.id}`)) || [];
+      msgs.push({ role: 'user', text, time: Date.now() });
+      localStorage.setItem(`chat_${d.id}`, JSON.stringify(msgs));
+      
+      // Ticket para Admin
+      const tickets = JSON.parse(localStorage.getItem('buckai_tickets')) || [];
+      if (!tickets.find(t => t.id === d.id)) tickets.push({ id: d.id, user: d.username, lastMsg: text });
+      localStorage.setItem('buckai_tickets', JSON.stringify(tickets));
+
+      if (supportInput) supportInput.value = '';
+      renderSupportChat();
+      setTimeout(() => {
+        msgs.push({ role: 'admin', text: "Recebemos sua mensagem! Responderemos em breve.", time: Date.now() });
+        localStorage.setItem(`chat_${d.id}`, JSON.stringify(msgs));
+        renderSupportChat();
+      }, 1000);
+    };
+  }
+
+  // Admin
+  const renderAdminPanel = () => {
+    if (adminLogsList) adminLogsList.innerHTML = `<div class="log-entry">Painel Admin Ativo.</div>`;
+    const tickets = JSON.parse(localStorage.getItem('buckai_tickets')) || [];
+    if (adminTicketsList) {
+      adminTicketsList.innerHTML = tickets.map(t => `<div class="ticket-item"><strong>${t.user}</strong>: ${t.lastMsg}</div>`).join('');
+    }
+  };
+
+  if (adminBatchBtn) {
+    adminBatchBtn.onclick = async () => {
+      const count = adminBatchCount?.value || 50;
+      adminBatchBtn.disabled = true;
+      try {
+        const res = await fetch('/api/generate-codes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret: "BUCK-ADMIN-SECRET-2026", count })
+        });
+        const data = await res.json();
+        if (data.success) alert("Códigos VIP enviados ao Discord!");
+      } catch (e) {} finally { adminBatchBtn.disabled = false; }
+    };
+  }
+
+  // Utilitários
+  if (copyBtn) copyBtn.onclick = () => { if (outputCode) { navigator.clipboard.writeText(outputCode.textContent); alert("Copiado!"); } };
+  if (downloadBtn) downloadBtn.onclick = () => alert("ZIP: Use o botão baixar no projeto.");
+
+  // Inicialização
   updateUI();
   setInterval(updateStatsUI, 15000);
+
+  // Imagens
+  if (uploadImageBtn) uploadImageBtn.onclick = () => imageInput?.click();
+  if (imageInput) imageInput.onchange = (e) => {
+    const f = e.target.files[0];
+    if (f) {
+      const r = new FileReader();
+      r.onload = (ev) => { selectedImageBase64 = ev.target.result.split(',')[1]; if (imageStatus) imageStatus.textContent = '✅ OK'; };
+      r.readAsDataURL(f);
+    }
+  };
+
+  if (uploadStudentImageBtn) uploadStudentImageBtn.onclick = () => studentImageInput?.click();
+  if (studentImageInput) studentImageInput.onchange = (e) => {
+    const f = e.target.files[0];
+    if (f) {
+      const r = new FileReader();
+      r.onload = (ev) => { studentImageBase64 = ev.target.result.split(',')[1]; if (studentImageStatus) studentImageStatus.textContent = '✅ OK'; };
+      r.readAsDataURL(f);
+    }
+  };
 });
