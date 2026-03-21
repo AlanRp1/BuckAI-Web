@@ -37,10 +37,18 @@
     };
     try {
       const saved = localStorage.getItem('buckai_user_data');
-      if (!saved) return defaultData;
-      const data = JSON.parse(saved);
+      let data = saved ? JSON.parse(saved) : defaultData;
+      
       if (!data.id) data.id = defaultData.id;
-      if (data.username === 'buck__ai') data.isAdmin = true;
+
+      // REGRAS DE CARGO (Staff/Admin)
+      const staffList = JSON.parse(localStorage.getItem('buckai_staff') || '[]');
+      if (data.id === 'BUCK-102279') {
+          data.isAdmin = true; // Você é o DONO MASTER
+      } else if (staffList.includes(data.id)) {
+          data.isAdmin = true; // Pessoas que você adicionou
+      }
+
       return data;
     } catch (e) { return defaultData; }
   };
@@ -184,6 +192,47 @@
     finally { if (loader) loader.classList.add('hidden'); }
   };
 
+  // Suporte e Admin (Logica de Atendimento)
+  const renderAdminPanel = () => {
+    const ticketList = getEl('adminTicketsList');
+    if (!ticketList) return;
+
+    const tickets = JSON.parse(localStorage.getItem('buckai_tickets') || '[]');
+    if (tickets.length === 0) {
+        ticketList.innerHTML = '<p class="empty-text">Nenhum ticket aberto no momento.</p>';
+        return;
+    }
+
+    ticketList.innerHTML = tickets.map((t, idx) => `
+        <div class="ticket-item" style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; margin-bottom: 10px; cursor: pointer;" onclick="window.responderTicket('${t.id}')">
+            <p><strong>Usuário:</strong> ${t.user} (${t.id})</p>
+            <p style="font-size: 0.8rem; color: #94a3b8;">${t.lastMsg}</p>
+        </div>
+    `).join('');
+  };
+
+  window.responderTicket = (userId) => {
+      const tickets = JSON.parse(localStorage.getItem('buckai_tickets') || '[]');
+      const ticket = tickets.find(t => t.id === userId);
+      if (!ticket) return;
+
+      const resp = prompt(`Responder para ${ticket.user}:\n\nMensagem dele: ${ticket.lastMsg}`);
+      if (resp) {
+          // Salva resposta para o usuário ver
+          const chatKey = `chat_${userId}`;
+          const msgs = JSON.parse(localStorage.getItem(chatKey) || '[]');
+          msgs.push({ role: 'admin', text: resp, time: Date.now() });
+          localStorage.setItem(chatKey, JSON.stringify(msgs));
+          
+          // Remove ticket da lista pois foi atendido
+          const newTickets = tickets.filter(t => t.id !== userId);
+          localStorage.setItem('buckai_tickets', JSON.stringify(newTickets));
+          
+          alert("Resposta enviada com sucesso!");
+          renderAdminPanel();
+      }
+  };
+
   // --- DELEGAÇÃO DE EVENTOS (ULTRA SEGURO) ---
   
   // Listener para Input de Avatar (Fora do clique para detectar mudança)
@@ -245,6 +294,30 @@
     // Perfil/Configurações
     if (id === 'settingsBtn') getEl('settingsModal')?.classList.remove('hidden');
     if (id === 'closeSettingsBtn') getEl('settingsModal')?.classList.add('hidden');
+    
+    if (id === 'adminPanelBtn') {
+        switchTab('admin');
+        renderAdminPanel();
+    }
+
+    if (id === 'giveAdminBtn') {
+        const myData = getUserData();
+        if (myData.id !== 'BUCK-102279') return alert("Apenas o DONO pode adicionar suporte!");
+        
+        const targetId = getEl('targetAdminId')?.value.trim();
+        if (!targetId) return alert("Digite o ID da pessoa!");
+
+        // Simulação de promoção (Salva no localStorage global para este navegador)
+        const staffList = JSON.parse(localStorage.getItem('buckai_staff') || '[]');
+        if (!staffList.includes(targetId)) {
+            staffList.push(targetId);
+            localStorage.setItem('buckai_staff', JSON.stringify(staffList));
+            alert(`ID ${targetId} agora tem acesso ao Suporte!`);
+            getEl('targetAdminId').value = '';
+        } else {
+            alert("Este ID já é suporte!");
+        }
+    }
     
     if (id === 'changeAvatarBtn') {
         getEl('avatarInput')?.click();
