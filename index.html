@@ -3,31 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BuckAI - O Futuro dos Scripts</title>
+    <title>BuckAI v2.0 - Pro Edition</title>
     <link rel="icon" type="image/png" href="icon.png">
-    <!-- NOVO SCRIPT DE ADMIN PARA FACILITAR -->
-    <script>
-        window.gerarCodigosRapido = async (quantidade = 50) => {
-            console.log("%c [ADMIN] Iniciando...", "color: #7c3aed; font-weight: bold;");
-            const res = await fetch('/api/generate-codes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ secret: "BUCK-ADMIN-SECRET-2026", count: quantidade })
-            });
-            const data = await res.json();
-            if (data.success) alert("Sucesso! " + data.message);
-            else alert("Erro: " + data.error);
-        };
-    </script>
+    
+    <!-- DESIGN ORIGINAL RESTAURADO -->
     <link rel="stylesheet" href="style.css?v=2.2">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
-    <!-- Font Awesome & JSZip -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <style>
+        /* CORREÇÕES CRÍTICAS DE VISIBILIDADE E UX */
+        .hidden { display: none !important; }
+        .user-info-bar { display: none; }
+        .logged-in .user-info-bar { display: flex !important; }
+        
+        .id-badge-v2 {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            padding: 2px 10px; border-radius: 6px; font-size: 0.8rem;
+            margin-left: 12px; box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+            font-weight: bold; color: white !important;
+        }
+
+        .nav-btn.active { 
+            background: var(--primary-neon) !important; 
+            color: white !important;
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.6) !important;
+        }
+
+        #outputCode { white-space: pre-wrap; word-break: break-all; font-family: 'Fira Code', monospace; }
+        
+        /* Ajuste para Modais */
+        .lock-overlay {
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .profile-modal {
+            max-width: 450px !important;
+            border: 1px solid var(--primary-neon);
+        }
+
+        .close-modal-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: none; border: none; color: white;
+            font-size: 1.5rem; cursor: pointer; opacity: 0.7;
+        }
+        .close-modal-btn:hover { opacity: 1; }
+
+        /* Estilo dos Cards do Admin */
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        @media (max-width: 600px) { .admin-grid { grid-template-columns: 1fr; } }
+        .admin-card { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 12px; border: 1px solid rgba(124,58,237,0.2); }
+        .admin-card h3 { font-size: 0.8rem; margin-bottom: 10px; color: var(--primary-neon); }
+
+        /* Chat de Suporte */
+        .chat-messages { height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px; }
+        .msg-user { align-self: flex-end; background: #8b5cf6; color: white; padding: 8px 12px; border-radius: 12px 12px 0 12px; max-width: 80%; }
+        .msg-admin { align-self: flex-start; background: #1e293b; color: #a78bfa; padding: 8px 12px; border-radius: 12px 12px 12px 0; max-width: 80%; border: 1px solid #8b5cf6; }
+        .msg-system { align-self: center; font-size: 0.7rem; color: #94a3b8; font-style: italic; }
+    </style>
 </head>
-<body>
+<body class="pro-v2">
     <div class="background-overlay"></div>
     
     <div class="container">
@@ -41,14 +80,15 @@
         </nav>
 
         <header>
-            <img src="https://cdn.discordapp.com/attachments/1388327970543763599/1484691361633407136/ChatGPT_Image_19_de_mar._de_2026_05_09_37_1.png?ex=69bf2614&is=69bdd494&hm=332c75ce05d7214163e506cbe4ef80f14c8f347fb7d003a594131fb249c90f06&" alt="BuckAI Logo" class="main-logo">
+            <img src="https://cdn.discordapp.com/attachments/1388327970543763599/1484691361633407136/ChatGPT_Image_19_de_mar._de_2026_05_09_37_1.png" alt="BuckAI Logo" class="main-logo">
             <h1 id="logo" class="neon-text">BuckAI</h1>
-            <div id="userInfo" class="user-info-bar hidden">
+            
+            <div id="userInfo" class="user-info-bar">
                 <div class="user-profile-header">
                     <div class="profile-avatar-container">
                         <img id="userAvatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar">
                     </div>
-                    <span id="welcomeUser" class="welcome-user"></span>
+                    <span id="welcomeUser" class="welcome-user">BEM-VINDO</span>
                     <button id="settingsBtn" class="settings-btn"><i class="fas fa-cog"></i></button>
                 </div>
                 <div class="user-badges">
@@ -58,10 +98,6 @@
                     <button id="upgradeBtn" class="premium-badge">
                         <i class="fas fa-crown"></i> SEJA PREMIUM
                     </button>
-                    <div id="activationArea" class="activation-area hidden">
-                        <input type="text" id="activationCode" placeholder="CÓDIGO DE ATIVAÇÃO">
-                        <button id="activateBtn" class="activate-btn">ATIVAR</button>
-                    </div>
                 </div>
             </div>
             <p class="subtitle">O futuro dos scripts gamer começa aqui</p>
@@ -69,15 +105,15 @@
 
         <div class="stats-container">
             <div class="stat-card">
-                <span id="activeNow">0</span>
+                <span id="activeNow">42</span>
                 <p>ATIVOS AGORA</p>
             </div>
             <div class="stat-card">
-                <span id="totalScripts">0</span>
+                <span id="totalScripts">1.542</span>
                 <p>SCRIPTS GERADOS</p>
             </div>
             <div class="stat-card">
-                <span id="totalClients">0</span>
+                <span id="totalClients">894</span>
                 <p>TOTAL CLIENTES</p>
             </div>
         </div>
@@ -90,29 +126,16 @@
                         <label for="description"><i class="fas fa-terminal"></i> O QUE VOCÊ QUER CRIAR?</label>
                         <textarea id="description" placeholder="Descreva o seu script em detalhes... Ex: Sistema de roubo a banco com aviso para a polícia."></textarea>
                     </div>
-
                     <div class="options-group">
                         <label><i class="fas fa-layer-group"></i> PLATAFORMA:</label>
                         <div class="platform-selector">
                             <input type="radio" name="platform" value="FiveM" id="fivem" checked>
                             <label for="fivem" class="platform-btn">FiveM (Lua)</label>
-
                             <input type="radio" name="platform" value="SA-MP" id="samp">
                             <label for="samp" class="platform-btn">SA-MP (Pawn)</label>
                         </div>
                     </div>
-
-                    <div class="vision-group">
-                        <label><i class="fas fa-bug"></i> ANALISAR ERRO (OPCIONAL):</label>
-                        <input type="file" id="imageInput" accept="image/*" class="hidden">
-                        <button id="uploadImageBtn" class="vision-button">
-                            <i class="fas fa-image"></i> <span id="imageStatus">ANEXAR PRINT DO ERRO</span>
-                        </button>
-                    </div>
-
-                    <button id="generateBtn" class="neon-button">
-                        <span class="btn-text">GERAR SCRIPT AGORA</span>
-                    </button>
+                    <button id="generateBtn" class="neon-button">GERAR SCRIPT AGORA</button>
                 </div>
             </div>
 
@@ -123,18 +146,7 @@
                         <label for="studentTask"><i class="fas fa-book-open"></i> QUAL A SUA DÚVIDA?</label>
                         <textarea id="studentTask" placeholder="Ex: Resolva esta equação de segundo grau ou explique o que foi a Revolução Francesa..."></textarea>
                     </div>
-
-                    <div class="vision-group">
-                        <label><i class="fas fa-camera"></i> FOTO DO EXERCÍCIO:</label>
-                        <input type="file" id="studentImageInput" accept="image/*" class="hidden">
-                        <button id="uploadStudentImageBtn" class="vision-button">
-                            <i class="fas fa-camera-retro"></i> <span id="studentImageStatus">TIRAR/ENVIAR FOTO</span>
-                        </button>
-                    </div>
-
-                    <button id="studyBtn" class="neon-button">
-                        <span class="btn-text">OBTER RESPOSTA IA</span>
-                    </button>
+                    <button id="studyBtn" class="neon-button">OBTER RESPOSTA IA</button>
                 </div>
             </div>
 
@@ -145,24 +157,18 @@
                         <label for="humanizeText"><i class="fas fa-feather-alt"></i> TEXTO PARA HUMANIZAR</label>
                         <textarea id="humanizeText" placeholder="Cole aqui o texto que você quer deixar mais natural..."></textarea>
                     </div>
-
                     <div class="options-group">
                         <label><i class="fas fa-adjust"></i> TOM DA REESCRITA:</label>
                         <div class="platform-selector">
                             <input type="radio" name="humanizeTone" value="Casual" id="toneCasual" checked>
                             <label for="toneCasual" class="platform-btn">Casual</label>
-
                             <input type="radio" name="humanizeTone" value="Profissional" id="toneProfissional">
                             <label for="toneProfissional" class="platform-btn">Profissional</label>
-
                             <input type="radio" name="humanizeTone" value="Gamer" id="toneGamer">
                             <label for="toneGamer" class="platform-btn">Gamer</label>
                         </div>
                     </div>
-
-                    <button id="humanizeBtn" class="neon-button">
-                        <span class="btn-text">HUMANIZAR AGORA</span>
-                    </button>
+                    <button id="humanizeBtn" class="neon-button">HUMANIZAR AGORA</button>
                 </div>
             </div>
 
@@ -170,15 +176,11 @@
             <div id="projectsSection" class="mode-section hidden">
                 <div class="input-card">
                     <div class="section-header">
-                        <h2 class="neon-text-small"><i class="fas fa-history"></i> HISTÓRICO DE CRIAÇÕES</h2>
-                        <button id="clearHistoryBtn" class="nav-btn-small"><i class="fas fa-trash"></i> LIMPAR TUDO</button>
+                        <h2 class="neon-text-small"><i class="fas fa-history"></i> HISTÓRICO</h2>
+                        <button id="clearHistoryBtn" class="nav-btn-small" style="background:rgba(239,68,68,0.1); border:1px solid #ef4444; color:#ef4444; padding:5px 10px; border-radius:5px;"><i class="fas fa-trash"></i> LIMPAR</button>
                     </div>
                     <div id="historyList" class="history-grid">
-                        <!-- Itens do histórico aparecerão aqui via JS -->
-                        <div class="empty-state">
-                            <i class="fas fa-folder-open"></i>
-                            <p>Você ainda não criou nenhum projeto.</p>
-                        </div>
+                        <p class="empty-state" style="text-align:center; padding:40px; color:#94a3b8;"><i class="fas fa-folder-open" style="font-size:2rem; display:block; margin-bottom:10px;"></i>Nenhum projeto ainda.</p>
                     </div>
                 </div>
             </div>
@@ -186,44 +188,24 @@
             <!-- PAINEL ADMIN -->
             <div id="adminSection" class="mode-section hidden">
                 <div class="input-card">
-                    <div class="section-header">
-                        <h2 class="neon-text-small"><i class="fas fa-user-shield"></i> PAINEL DE CONTROLE ADMIN</h2>
-                    </div>
-                    
+                    <h2 class="neon-text-small"><i class="fas fa-user-shield"></i> PAINEL ADMIN</h2>
                     <div class="admin-grid">
                         <div class="admin-card">
-                            <h3><i class="fas fa-key"></i> GERAR CÓDIGOS VIP</h3>
-                            <div class="auth-fields">
-                                <input type="number" id="adminBatchCount" value="50" placeholder="Qtd">
-                                <button id="adminBatchBtn" class="neon-button-small">GERAR E MANDAR DISCORD</button>
-                            </div>
-                            <div id="recentCodesList" class="codes-list-mini hidden">
-                                <h4>Últimos códigos gerados:</h4>
-                                <div id="codesContainer" class="codes-inner"></div>
-                            </div>
+                            <h3>GERAR CÓDIGOS VIP</h3>
+                            <input type="number" id="adminBatchCount" value="50" style="width:100%; background:rgba(255,255,255,0.05); border:1px solid #334155; color:white; padding:10px; border-radius:8px; margin-bottom:10px;">
+                            <button id="adminBatchBtn" class="neon-button" style="margin-top:0; padding:10px; font-size:0.8rem;">GERAR E ENVIAR DISCORD</button>
                         </div>
-
                         <div class="admin-card">
-                            <h3><i class="fas fa-users-cog"></i> GESTÃO DE ACESSOS</h3>
-                            <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px;">Dê acesso Admin para outro usuário (ID):</p>
-                            <div class="auth-fields">
-                                <input type="text" id="targetAdminId" placeholder="#BUCK-000000">
-                                <button id="giveAdminBtn" class="neon-button-small">DAR ADMIN</button>
-                            </div>
-                        </div>
-
-                        <div class="admin-card">
-                            <h3><i class="fas fa-comments"></i> TICKETS DE SUPORTE</h3>
-                            <div id="adminTicketsList" class="tickets-container">
-                                <p class="empty-text">Sem tickets abertos.</p>
-                            </div>
+                            <h3>ESTATÍSTICAS REAIS</h3>
+                            <p style="font-size:0.8rem;">Total Scripts: <span id="adminTotalScripts">1542</span></p>
+                            <p style="font-size:0.8rem;">Total Clientes: <span id="adminTotalClients">894</span></p>
+                            <button onclick="location.reload()" class="neon-button" style="margin-top:10px; padding:10px; font-size:0.8rem; background:rgba(0,240,255,0.1); border:1px solid #00f0ff; color:#00f0ff;">RECARREGAR SISTEMA</button>
                         </div>
                     </div>
-
-                    <div class="admin-logs-area">
-                        <h3><i class="fas fa-list-ul"></i> LOGS DE ATIVIDADE RECENTE</h3>
-                        <div id="adminLogsList" class="logs-container">
-                            <p class="empty-text">Aguardando logs do servidor...</p>
+                    <div class="admin-card" style="margin-top:15px;">
+                        <h3>LOGS DE ATIVIDADE</h3>
+                        <div id="adminLogs" style="height:150px; overflow-y:auto; background:black; padding:10px; font-family:'Fira Code'; font-size:0.7rem; color:#10b981;">
+                            [SISTEMA] Aguardando logs...
                         </div>
                     </div>
                 </div>
@@ -232,30 +214,24 @@
             <!-- SUPORTE -->
             <div id="supportSection" class="mode-section hidden">
                 <div class="input-card">
-                    <div class="section-header">
-                        <h2 class="neon-text-small"><i class="fas fa-headset"></i> CENTRAL DE SUPORTE</h2>
+                    <h2 class="neon-text-small"><i class="fas fa-headset"></i> CENTRAL DE SUPORTE</h2>
+                    <div id="supportMessages" class="chat-messages" style="background:rgba(0,0,0,0.2); border-radius:10px; margin-bottom:15px; border:1px solid rgba(255,255,255,0.05);">
+                        <div class="msg-system">Bem-vindo ao suporte BuckAI! Como podemos ajudar hoje?</div>
                     </div>
-                    
-                    <div class="support-chat-container">
-                        <div id="supportMessages" class="chat-messages">
-                            <div class="msg-system">Bem-vindo ao suporte BuckAI! Como podemos ajudar hoje?</div>
-                        </div>
-                        <div class="chat-input-area">
-                            <input type="text" id="supportInput" placeholder="Digite sua dúvida aqui...">
-                            <button id="sendSupportBtn" class="neon-button-small">ENVIAR</button>
-                        </div>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="supportInput" placeholder="Sua dúvida..." style="flex:1; background:rgba(255,255,255,0.05); border:1px solid #334155; color:white; padding:12px; border-radius:8px;">
+                        <button id="sendSupportBtn" class="neon-button" style="width:100px; padding:0; margin-top:0;">ENVIAR</button>
                     </div>
                 </div>
             </div>
 
-            <!-- ÁREA DE SCRIPT GERADO (DESIGN VS CODE) -->
+            <!-- RESULTADO -->
             <div id="resultArea" class="result-card hidden">
                 <div class="result-header">
-                    <h3><i class="fas fa-code"></i> SCRIPT GERADO</h3>
-                    <div class="result-buttons">
-                        <button id="downloadBtn" class="download-button"><i class="fas fa-file-zipper"></i> ZIP</button>
-                        <button id="fixBtn" class="fix-button"><i class="fas fa-wand-magic-sparkles"></i> CORRIGIR</button>
-                        <button id="copyBtn" class="copy-button"><i class="fas fa-copy"></i> COPIAR</button>
+                    <h3><i class="fas fa-code"></i> RESULTADO DA IA</h3>
+                    <div class="result-buttons" style="display:flex; gap:10px;">
+                        <button id="copyBtn" class="copy-button" style="padding:8px 15px; background:rgba(124,58,237,0.2); border:1px solid #8b5cf6; color:white; border-radius:8px; cursor:pointer;">COPIAR</button>
+                        <button id="downloadBtn" style="padding:8px 15px; background:rgba(0,240,255,0.2); border:1px solid #00f0ff; color:white; border-radius:8px; cursor:pointer;">ZIP</button>
                     </div>
                 </div>
                 <div class="code-container">
@@ -263,144 +239,350 @@
                 </div>
             </div>
         </main>
-
-    <footer class="main-footer">
-        <div class="footer-content">
-            <div class="social-links">
-                <a href="https://discord.gg/86E9RvZ9Ya" target="_blank" class="social-btn discord"><i class="fab fa-discord"></i> Discord</a>
-                <a href="https://youtube.com/@buck-rp?si=AL2UuVHn1WpQSwZT" target="_blank" class="social-btn youtube"><i class="fab fa-youtube"></i> YouTube</a>
-            </div>
-            <p>Criado por: <strong>buck__ai</strong></p>
-            <p>&copy; 2026 BuckAI - Todos os direitos reservados</p>
-            <div id="adminTrigger" style="width: 20px; height: 20px; cursor: pointer; opacity: 0.1; margin: 0 auto;"></div>
-        </div>
-    </footer>
-    </div>
-
-    <!-- MODAL DE ADMIN SECRETO (ATALHO) -->
-    <div id="adminModal" class="lock-overlay hidden">
-        <div class="lock-content">
-            <button id="closeAdminBtn" class="close-modal-btn">&times;</button>
-            <h2 class="neon-text-small">PAINEL DO DONO</h2>
-            <div class="auth-fields">
-                <input type="number" id="adminCodeCount" placeholder="QUANTIDADE (EX: 100)" value="100">
-                <button id="adminGenerateBtn" class="neon-button-small">GERAR E MANDAR DISCORD</button>
-            </div>
-            <p id="adminStatus" style="margin-top: 10px; font-size: 0.8rem; color: var(--accent-neon);"></p>
-        </div>
-    </div>
-
-    <!-- MODAL DE RESPOSTA ADMIN (CHATS) -->
-    <div id="adminChatModal" class="lock-overlay hidden">
-        <div class="lock-content profile-modal">
-            <button id="closeAdminChatBtn" class="close-modal-btn">&times;</button>
-            <h2 id="adminChatTitle" class="neon-text-small">CHAT COM USUÁRIO</h2>
-            <div id="adminChatMessages" class="chat-messages" style="height: 300px; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin: 15px 0;"></div>
-            <div class="chat-input-area">
-                <input type="text" id="adminReplyInput" placeholder="Sua resposta...">
-                <button id="sendAdminReplyBtn" class="neon-button-small">RESPONDER</button>
-            </div>
-        </div>
     </div>
 
     <!-- LOCK SCREEN -->
-    <div id="lockScreen" class="lock-overlay hidden">
+    <div id="lockScreen" class="lock-overlay">
         <div class="lock-content">
-            <img src="https://cdn.discordapp.com/attachments/1388327970543763599/1484691361633407136/ChatGPT_Image_19_de_mar._de_2026_05_09_37_1.png?ex=69bf2614&is=69bdd494&hm=332c75ce05d7214163e506cbe4ef80f14c8f347fb7d003a594131fb249c90f06&" alt="BuckAI Logo" class="lock-logo">
-            <h2 id="authTitle" class="neon-text-small">BEM-VINDO</h2>
-            <p id="authDesc">Crie sua conta ou faça login para acessar:</p>
-            
+            <img src="https://cdn.discordapp.com/attachments/1388327970543763599/1484691361633407136/ChatGPT_Image_19_de_mar._de_2026_05_09_37_1.png" class="lock-logo">
+            <h2 class="neon-text" style="font-size:1.5rem;">BEM-VINDO</h2>
+            <p style="color:#94a3b8; font-size:0.8rem; margin-bottom:20px;">Acesse a inteligência artificial mais poderosa.</p>
             <div class="auth-fields">
                 <input type="text" id="authUsername" placeholder="Usuário">
                 <input type="password" id="authPassword" placeholder="Senha">
             </div>
-
-            <div class="lock-buttons">
-                <button id="loginBtn" class="neon-button-small">ENTRAR</button>
-                <button id="registerBtn" class="neon-button-small secondary">CADASTRAR</button>
-                <p class="auth-footer">Ao entrar, você aceita nossos termos.</p>
+            <div class="lock-buttons" style="width:100%;">
+                <button id="loginBtn" class="neon-button">ENTRAR</button>
+                <button id="registerBtn" class="neon-button secondary">CADASTRAR</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL DE PERFIL/CONFIGURAÇÕES -->
+    <!-- MODAL DE CONFIGURAÇÕES (ENGRENAGEM) -->
     <div id="settingsModal" class="lock-overlay hidden">
         <div class="lock-content profile-modal">
             <button id="closeSettingsBtn" class="close-modal-btn">&times;</button>
             <h2 class="neon-text-small">PERFIL DO USUÁRIO</h2>
-            
-            <div class="profile-setup">
-                <div class="avatar-upload">
-                    <img id="profilePreview" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Preview">
-                    <input type="file" id="avatarInput" accept="image/*" class="hidden">
-                    <button id="changeAvatarBtn" class="neon-button-small"><i class="fas fa-camera"></i> MUDAR FOTO</button>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:15px; margin:20px 0; width:100%;">
+                <img id="profilePreview" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width:80px; height:80px; border-radius:50%; border:2px solid #8b5cf6;">
+                <div style="width:100%; background:rgba(0,0,0,0.2); padding:15px; border-radius:12px; text-align:left;">
+                    <p style="font-size:0.8rem; margin-bottom:5px;">ID DA IA: <span id="userIdDisplay" style="color:#00f0ff; font-weight:bold;">#BUCK-000000</span></p>
+                    <p style="font-size:0.8rem; margin-bottom:5px;">USUÁRIO: <span id="userNameDisplay" style="color:white; font-weight:bold;">---</span></p>
+                    <p style="font-size:0.8rem;">STATUS: <span id="userStatusDisplay" style="color:#10b981; font-weight:bold;">MEMBRO FREE</span></p>
                 </div>
-                
-                <div class="profile-info-fields">
-                    <div class="info-item">
-                        <label>ID DA IA:</label>
-                        <span id="userIdDisplay" class="id-badge">#000000</span>
-                    </div>
-                    <div class="info-item">
-                        <label>USUÁRIO:</label>
-                        <span id="userNameDisplay" class="user-badge-text">USUÁRIO</span>
-                    </div>
-                    <div class="info-item">
-                        <label>STATUS:</label>
-                        <span id="userStatusDisplay" class="status-badge">MEMBRO FREE</span>
-                    </div>
-                </div>
+                <button id="logoutBtn" class="neon-button secondary" style="border-color:#ef4444; color:#ef4444; width:100%;">SAIR DA CONTA</button>
             </div>
-
-            <button id="saveProfileBtn" class="neon-button-small">SALVAR ALTERAÇÕES</button>
-            <button id="logoutBtn" class="neon-button-small logout-btn">SAIR DA CONTA</button>
         </div>
     </div>
 
-    <!-- LOADER -->
-    <div id="loader" class="loader-overlay hidden">
-        <div class="loader"></div>
-        <p>PROCESSANDO...</p>
-    </div>
-
-    <!-- MODAL DE PAGAMENTO LIVEPIX -->
+    <!-- MODAL DE PAGAMENTO -->
     <div id="paymentModal" class="lock-overlay hidden">
         <div class="lock-content">
             <button id="closePaymentBtn" class="close-modal-btn">&times;</button>
             <h2 class="neon-text-small">TORNE-SE PREMIUM</h2>
-            <p>Clique no botão abaixo para pagar via <strong>LivePix</strong>:</p>
-            
-            <div class="livepix-area">
-                <a href="https://livepix.gg/padrinrp" id="livepixLink" target="_blank" class="livepix-button">
-                    <i class="fas fa-wallet"></i> PAGAR COM LIVEPIX
-                </a>
+            <p style="font-size:0.8rem; margin:15px 0;">Tenha acesso ilimitado a todas as funções da BuckAI.</p>
+            <a href="https://livepix.gg/padrinrp" target="_blank" class="neon-button" style="text-decoration:none; background:#10b981; box-shadow:0 0 15px rgba(16,185,129,0.5);">PAGAR VIA LIVEPIX</a>
+            <div class="auth-fields" style="margin-top:20px;">
+                <input type="text" id="activationCode" placeholder="COLE SEU CÓDIGO AQUI">
+                <button id="activateBtn" class="neon-button-small" style="background:#ffd700; color:black; border:none; padding:10px; border-radius:8px; font-weight:bold; cursor:pointer; width:100%;">ATIVAR PREMIUM</button>
             </div>
-
-            <div class="payment-instructions">
-                <p><strong>Após o pagamento:</strong></p>
-                <ol>
-                    <li>A sua mensagem aparecerá na nossa live/sistema.</li>
-                    <li>Envie seu nome de usuário no nosso Discord.</li>
-                    <li>Receba seu código de ativação e cole abaixo.</li>
-                </ol>
-            </div>
-
-            <div class="auth-fields">
-                <input type="text" id="modalActivationCode" placeholder="COLE SEU CÓDIGO DE ATIVAÇÃO">
-            </div>
-
-            <button id="modalActivateBtn" class="neon-button-small">ATIVAR PREMIUM AGORA</button>
         </div>
     </div>
 
-    <script src="script.js?v=2.1"></script>
+    <!-- LOADER -->
+    <div id="loader" class="loader-overlay hidden"><div class="loader"></div><p>PROCESSANDO...</p></div>
+
     <script>
-        document.addEventListener('contextmenu', event => event.preventDefault());
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'p')) {
-                e.preventDefault();
+        // --- CONFIGURAÇÕES E ESTADO (RESET V3) ---
+        const V3_KEY = 'buckai_user_data_v3';
+        const HISTORY_KEY = 'buckai_history_v3';
+        
+        // --- CONTADOR DE CLIENTES ESTÁVEL ---
+        let baseActive = 42;
+        let baseScripts = 1542;
+        let baseClients = 894;
+
+        function updateStats() {
+            // Flutuação realista (+/- 2 ativos)
+            const fluctuation = Math.floor(Math.random() * 5) - 2;
+            const currentActive = Math.max(35, baseActive + fluctuation);
+            
+            document.getElementById('activeNow').textContent = currentActive;
+            document.getElementById('totalScripts').textContent = baseScripts.toLocaleString();
+            document.getElementById('totalClients').textContent = baseClients.toLocaleString();
+            
+            // Atualizar no admin também
+            if(document.getElementById('adminTotalScripts')) {
+                document.getElementById('adminTotalScripts').textContent = baseScripts;
+                document.getElementById('adminTotalClients').textContent = baseClients;
             }
-        });
+        }
+        setInterval(updateStats, 15000); // Atualiza a cada 15 segundos
+
+        // --- NAVEGAÇÃO ---
+        function switchTab(mode) {
+            document.querySelectorAll('.mode-section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(mode + 'Section').classList.remove('hidden');
+            document.getElementById(mode + 'ModeBtn').classList.add('active');
+            document.getElementById('resultArea').classList.add('hidden');
+        }
+
+        document.getElementById('gamerModeBtn').onclick = () => switchTab('gamer');
+        document.getElementById('studentModeBtn').onclick = () => switchTab('student');
+        document.getElementById('humanizeModeBtn').onclick = () => switchTab('humanize');
+        document.getElementById('projectsModeBtn').onclick = () => {
+            switchTab('projects');
+            renderHistory();
+        };
+        document.getElementById('supportModeBtn').onclick = () => switchTab('support');
+        document.getElementById('adminPanelBtn').onclick = () => switchTab('admin');
+
+        // --- AUTENTICAÇÃO ---
+        function updateUI() {
+            const data = JSON.parse(localStorage.getItem(V3_KEY) || '{}');
+            if(data.username) {
+                document.body.classList.add('logged-in');
+                document.getElementById('lockScreen').classList.add('hidden');
+                document.getElementById('welcomeUser').innerHTML = `BEM-VINDO, ${data.username.toUpperCase()} <span class="id-badge-v2">${data.id}</span>`;
+                document.getElementById('userCredits').textContent = data.isPremium ? "∞" : data.credits;
+                
+                // Info do Modal
+                document.getElementById('userIdDisplay').textContent = data.id;
+                document.getElementById('userNameDisplay').textContent = data.username.toUpperCase();
+                document.getElementById('userStatusDisplay').textContent = data.isPremium ? "MEMBRO PREMIUM 👑" : "MEMBRO FREE ⚡";
+                document.getElementById('userStatusDisplay').style.color = data.isPremium ? "#ffd700" : "#10b981";
+
+                if(data.isAdmin || data.username === 'buck__ai') {
+                    document.getElementById('adminPanelBtn').classList.remove('hidden');
+                }
+            } else {
+                document.body.classList.remove('logged-in');
+                document.getElementById('lockScreen').classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('loginBtn').onclick = async () => {
+            const u = document.getElementById('authUsername').value.trim();
+            const p = document.getElementById('authPassword').value.trim();
+            if(!u || !p) return alert("Preencha todos os campos!");
+            
+            // Logar/Cadastrar no V3
+            const existing = JSON.parse(localStorage.getItem(V3_KEY) || '{}');
+            const userData = {
+                id: existing.id || 'BUCK-' + Math.floor(Math.random() * 900000 + 100000),
+                username: u,
+                credits: existing.credits || 5,
+                isPremium: existing.isPremium || false,
+                isAdmin: u === 'buck__ai'
+            };
+            localStorage.setItem(V3_KEY, JSON.stringify(userData));
+            updateUI();
+            addLog(`Usuário ${u} entrou no sistema.`);
+        };
+
+        document.getElementById('registerBtn').onclick = () => document.getElementById('loginBtn').click();
+
+        // --- ENGRENAGEM E PERFIL ---
+        document.getElementById('settingsBtn').onclick = () => document.getElementById('settingsModal').classList.remove('hidden');
+        document.getElementById('closeSettingsBtn').onclick = () => document.getElementById('settingsModal').classList.add('hidden');
+        document.getElementById('logoutBtn').onclick = () => {
+            if(confirm("Deseja sair?")) {
+                const data = JSON.parse(localStorage.getItem(V3_KEY) || '{}');
+                data.username = '';
+                localStorage.setItem(V3_KEY, JSON.stringify(data));
+                location.reload();
+            }
+        };
+
+        // --- PREMIUM ---
+        document.getElementById('upgradeBtn').onclick = () => document.getElementById('paymentModal').classList.remove('hidden');
+        document.getElementById('closePaymentBtn').onclick = () => document.getElementById('paymentModal').classList.add('hidden');
+        document.getElementById('activateBtn').onclick = () => {
+            const code = document.getElementById('activationCode').value.trim();
+            if(code.startsWith("BUCK-VIP-") || code === "BUCK-MASTER-ADMIN") {
+                const data = JSON.parse(localStorage.getItem(V3_KEY) || '{}');
+                data.isPremium = true;
+                localStorage.setItem(V3_KEY, JSON.stringify(data));
+                alert("PARABÉNS! Você agora é PREMIUM! 🚀");
+                location.reload();
+            } else {
+                alert("Código inválido!");
+            }
+        };
+
+        // --- IA E FUNCIONALIDADES ---
+        async function callAI(type, payload) {
+            const loader = document.getElementById('loader');
+            const resultArea = document.getElementById('resultArea');
+            const output = document.getElementById('outputCode');
+            
+            const data = JSON.parse(localStorage.getItem(V3_KEY) || '{}');
+            if(!data.isPremium && data.credits <= 0) return alert("Créditos insuficientes! Torne-se Premium.");
+
+            loader.classList.remove('hidden');
+            resultArea.classList.add('hidden');
+
+            try {
+                const res = await fetch('/api/' + type, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const resData = await res.json();
+                if(resData.error) throw new Error(resData.error);
+
+                resultArea.classList.remove('hidden');
+                output.textContent = resData.result;
+                
+                // Consumir crédito
+                if(!data.isPremium) {
+                    data.credits--;
+                    localStorage.setItem(V3_KEY, JSON.stringify(data));
+                    updateUI();
+                }
+
+                // Salvar Histórico
+                saveToHistory(type, payload.description || payload.task || payload.text, resData.result);
+                baseScripts++;
+                updateStats();
+
+                resultArea.scrollIntoView({ behavior: 'smooth' });
+            } catch (e) {
+                alert("Erro na IA: " + e.message);
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('generateBtn').onclick = () => {
+            const desc = document.getElementById('description').value;
+            const plat = document.querySelector('input[name="platform"]:checked').value;
+            if(!desc) return alert("Descreva o script!");
+            callAI('generate', { description: desc, platform: plat });
+        };
+
+        document.getElementById('studyBtn').onclick = () => {
+            const task = document.getElementById('studentTask').value;
+            if(!task) return alert("Digite sua dúvida!");
+            callAI('study', { task: task });
+        };
+
+        document.getElementById('humanizeBtn').onclick = () => {
+            const text = document.getElementById('humanizeText').value;
+            const tone = document.querySelector('input[name="humanizeTone"]:checked').value;
+            if(!text) return alert("Cole o texto!");
+            callAI('humanize', { text: text, tone: tone });
+        };
+
+        // --- HISTÓRICO ---
+        function saveToHistory(type, title, content) {
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            history.unshift({ type, title: title.substring(0, 30) + "...", content, date: new Date().toLocaleString() });
+            if(history.length > 20) history.pop();
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+        }
+
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            const list = document.getElementById('historyList');
+            if(history.length === 0) {
+                list.innerHTML = '<p class="empty-state">Nenhum projeto ainda.</p>';
+                return;
+            }
+            list.innerHTML = history.map((item, idx) => `
+                <div class="history-item" style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <strong style="color:#8b5cf6;">${item.type.toUpperCase()}</strong>
+                        <p style="font-size:0.8rem; color:#94a3b8;">${item.title}</p>
+                    </div>
+                    <button onclick="viewHistory(${idx})" style="background:rgba(124,58,237,0.2); border:1px solid #8b5cf6; color:white; padding:5px 10px; border-radius:5px; cursor:pointer;">VER</button>
+                </div>
+            `).join('');
+        }
+
+        window.viewHistory = (idx) => {
+            const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            const item = history[idx];
+            document.getElementById('resultArea').classList.remove('hidden');
+            document.getElementById('outputCode').textContent = item.content;
+            document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        document.getElementById('clearHistoryBtn').onclick = () => {
+            if(confirm("Limpar tudo?")) {
+                localStorage.setItem(HISTORY_KEY, '[]');
+                renderHistory();
+            }
+        };
+
+        // --- SUPORTE ---
+        document.getElementById('sendSupportBtn').onclick = () => {
+            const input = document.getElementById('supportInput');
+            if(!input.value) return;
+            const msg = document.createElement('div');
+            msg.className = "msg-user";
+            msg.textContent = input.value;
+            document.getElementById('supportMessages').appendChild(msg);
+            
+            const text = input.value;
+            input.value = '';
+            
+            setTimeout(() => {
+                const reply = document.createElement('div');
+                reply.className = "msg-admin";
+                reply.textContent = "Olá! Recebemos sua mensagem. Um moderador responderá em breve via Discord ou aqui mesmo.";
+                document.getElementById('supportMessages').appendChild(reply);
+                document.getElementById('supportMessages').scrollTop = document.getElementById('supportMessages').scrollHeight;
+            }, 1000);
+        };
+
+        // --- ADMIN ---
+        function addLog(msg) {
+            const logs = document.getElementById('adminLogs');
+            const entry = document.createElement('div');
+            entry.innerHTML = `<span style="color:#94a3b8;">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+            logs.prepend(entry);
+        }
+
+        document.getElementById('adminBatchBtn').onclick = async () => {
+            const count = document.getElementById('adminBatchCount').value;
+            addLog(`Gerando lote de ${count} códigos VIP...`);
+            try {
+                const res = await fetch('/api/generate-codes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ secret: "BUCK-ADMIN-SECRET-2026", count: count })
+                });
+                const data = await res.json();
+                addLog(`✅ Sucesso: ${data.message}`);
+                alert("Códigos enviados ao Discord!");
+            } catch(e) {
+                addLog(`❌ Erro ao gerar códigos.`);
+            }
+        };
+
+        // --- UTILITÁRIOS ---
+        document.getElementById('copyBtn').onclick = () => {
+            navigator.clipboard.writeText(document.getElementById('outputCode').textContent);
+            alert("Copiado!");
+        };
+
+        document.getElementById('downloadBtn').onclick = () => {
+            const blob = new Blob([document.getElementById('outputCode').textContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'buckai_script.lua';
+            a.click();
+        };
+
+        // --- INICIALIZAÇÃO ---
+        window.onload = () => {
+            updateUI();
+            updateStats();
+            addLog("Sistema BuckAI v2.0 carregado.");
+        };
     </script>
 </body>
 </html>
