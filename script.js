@@ -185,6 +185,23 @@
   };
 
   // --- DELEGAÇÃO DE EVENTOS (ULTRA SEGURO) ---
+  
+  // Listener para Input de Avatar (Fora do clique para detectar mudança)
+  document.addEventListener('change', (e) => {
+    if (e.target.id === 'avatarInput') {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 500 * 1024) return alert("Foto muito grande! Máximo 500KB.");
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const preview = getEl('profilePreview');
+                if (preview) preview.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+  });
+
   document.addEventListener('click', (e) => {
     const target = e.target.closest('button, a');
     if (!target || !target.id) {
@@ -228,12 +245,60 @@
     // Perfil/Configurações
     if (id === 'settingsBtn') getEl('settingsModal')?.classList.remove('hidden');
     if (id === 'closeSettingsBtn') getEl('settingsModal')?.classList.add('hidden');
+    
+    if (id === 'changeAvatarBtn') {
+        getEl('avatarInput')?.click();
+    }
+
+    if (id === 'saveProfileBtn') {
+        const data = getUserData();
+        const preview = getEl('profilePreview');
+        if (preview && preview.src.startsWith('data:image')) {
+            data.avatar = preview.src;
+            saveUserData(data);
+            alert("Foto salva com sucesso!");
+            getEl('settingsModal')?.classList.add('hidden');
+        } else {
+            alert("Selecione uma nova foto primeiro!");
+        }
+    }
+
     if (id === 'logoutBtn') {
         if (confirm("Sair?")) {
             const d = getUserData();
             d.username = '';
             saveUserData(d);
             location.reload();
+        }
+    }
+
+    // Suporte
+    if (id === 'sendSupportBtn') {
+        const input = getEl('supportInput');
+        const text = input?.value.trim();
+        if (!text) return alert("Digite uma mensagem!");
+
+        const data = getUserData();
+        const chatContainer = getEl('supportMessages');
+        
+        if (chatContainer) {
+            // Adiciona mensagem do usuário
+            const userMsg = document.createElement('div');
+            userMsg.className = 'msg-user';
+            userMsg.innerHTML = `<span class="msg-text">${text}</span>`;
+            chatContainer.appendChild(userMsg);
+            
+            if (input) input.value = '';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Simula resposta do suporte
+            setTimeout(() => {
+                const adminMsg = document.createElement('div');
+                adminMsg.className = 'msg-admin';
+                adminMsg.innerHTML = `<span class="msg-text">Olá! Recebemos sua mensagem. Um moderador responderá em breve.</span>`;
+                chatContainer.appendChild(adminMsg);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 1000);
         }
     }
 
