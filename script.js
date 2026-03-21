@@ -386,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Inicialização ---
+  console.log("%c BuckAI v1.5 - ZIP Ultra-Robust Ativo ", "background: #7c3aed; color: white; font-weight: bold; padding: 4px;");
   updateUI();
 
   // Outros ouvintes de eventos
@@ -433,6 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let folderName = 'BuckAI_Project';
 
     const activeBtn = document.querySelector('.nav-btn.active');
+    let isGamerMode = (activeBtn && activeBtn.id === 'gamerModeBtn');
     let platform = 'FiveM';
     if (activeBtn) {
       if (activeBtn.id === 'gamerModeBtn') {
@@ -480,17 +482,16 @@ document.addEventListener('DOMContentLoaded', () => {
           let filePath = match[1].trim();
           let fileContent = match[2].trim();
           
-          // LIMPEZA CRÍTICA: Remover prefixos redundantes (ex: "fivem/client.lua" -> "client.lua")
+          // LIMPEZA CRÍTICA: Remover prefixos redundantes
           filePath = filePath.replace(/[:\s]/g, '');
           filePath = filePath.replace(/^\/+/, '');
           
-          // Se o caminho começar com o nome da plataforma ou "script/", remove
-          const redundantPrefixes = ['fivem/', 'samp/', 'script/', 'resource/'];
-          redundantPrefixes.forEach(prefix => {
-            if (filePath.toLowerCase().startsWith(prefix)) {
-              filePath = filePath.substring(prefix.length);
-            }
-          });
+          // Se o caminho tiver pastas (ex: "meu_script/client.lua"), pega apenas o arquivo
+          // EXCEÇÃO: Mantém a pasta html/ pois é padrão FiveM
+          if (filePath.includes('/') && !filePath.toLowerCase().startsWith('html/')) {
+            const parts = filePath.split('/');
+            filePath = parts[parts.length - 1];
+          }
 
           if (filePath.length > 0 && filePath.length < 100) {
             filesFound[filePath.toLowerCase()] = fileContent;
@@ -499,8 +500,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      // FALLBACK DE SEGURANÇA: Se for FiveM, garantir os arquivos OBRIGATÓRIOS
-      if (platform === 'FiveM') {
+      // FALLBACK DE SEGURANÇA: APENAS SE FOR MODO GAMER E FIVEM
+      if (isGamerMode && platform === 'FiveM') {
         if (!filesFound["client.lua"]) {
           const clientMatch = code.match(/(?:client\.lua|CLIENT):?([\s\S]*?)(?=(?:server\.lua|SERVER|config\.lua|CONFIG|fxmanifest\.lua|MANIFEST|$))/i);
           zip.file("client.lua", clientMatch ? clientMatch[1].trim() : code);
@@ -535,7 +536,7 @@ document.addEventListener('DOMContentLoaded', () => {
             zip.file("html/script.js", "window.addEventListener('message', (event) => {\n  // Lógica NUI aqui\n});");
           }
         }
-      } else if (platform === 'SA-MP') {
+      } else if (isGamerMode && platform === 'SA-MP') {
         if (Object.keys(filesFound).length === 0) {
           zip.file("script.pwn", code);
         }
