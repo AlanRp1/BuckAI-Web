@@ -450,7 +450,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Inicialização ---
-  console.log("%c BuckAI v1.8 - Gerador de Códigos Webhook Ativo ", "background: #7c3aed; color: white; font-weight: bold; padding: 4px;");
+  console.log("%c BuckAI v1.9 - Sistema de Pagamento v2 Ativo ", "background: #7c3aed; color: white; font-weight: bold; padding: 4px;");
+  
+  // Função para você resetar seu usuário e testar o fluxo do zero
+  window.resetarMeuUsuario = () => {
+    localStorage.removeItem('buckai_user_data');
+    localStorage.removeItem('buckai_used_codes');
+    alert("Usuário resetado! Recarregue a página (F5) para testar como um novo usuário.");
+    location.reload();
+  };
+
   updateUI();
 
   // Outros ouvintes de eventos

@@ -35,6 +35,10 @@
                     <button id="upgradeBtn" class="premium-badge">
                         <i class="fas fa-crown"></i> SEJA PREMIUM
                     </button>
+                    <div id="activationArea" class="activation-area hidden">
+                        <input type="text" id="activationCode" placeholder="CÓDIGO DE ATIVAÇÃO">
+                        <button id="activateBtn" class="activate-btn">ATIVAR</button>
+                    </div>
                 </div>
             </div>
             <p class="subtitle">O futuro dos scripts gamer começa aqui</p>
@@ -207,7 +211,37 @@
         <p>PROCESSANDO...</p>
     </div>
 
-    <script src="script.js?v=1.7"></script>
+    <!-- MODAL DE PAGAMENTO LIVEPIX -->
+    <div id="paymentModal" class="lock-overlay hidden">
+        <div class="lock-content">
+            <button id="closePaymentBtn" class="close-modal-btn">&times;</button>
+            <h2 class="neon-text-small">TORNE-SE PREMIUM</h2>
+            <p>Clique no botão abaixo para pagar via <strong>LivePix</strong>:</p>
+            
+            <div class="livepix-area">
+                <a href="https://livepix.gg/padrinrp" id="livepixLink" target="_blank" class="livepix-button">
+                    <i class="fas fa-wallet"></i> PAGAR COM LIVEPIX
+                </a>
+            </div>
+
+            <div class="payment-instructions">
+                <p><strong>Após o pagamento:</strong></p>
+                <ol>
+                    <li>A sua mensagem aparecerá na nossa live/sistema.</li>
+                    <li>Envie seu nome de usuário no nosso Discord.</li>
+                    <li>Receba seu código de ativação e cole abaixo.</li>
+                </ol>
+            </div>
+
+            <div class="auth-fields">
+                <input type="text" id="modalActivationCode" placeholder="COLE SEU CÓDIGO DE ATIVAÇÃO">
+            </div>
+
+            <button id="modalActivateBtn" class="neon-button-small">ATIVAR PREMIUM AGORA</button>
+        </div>
+    </div>
+
+    <script src="script.js?v=1.9"></script>
     <script>
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('keydown', (e) => {
