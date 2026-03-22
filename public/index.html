@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuckAI - O Futuro dos Scripts</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    
+    <link rel="stylesheet" href="style.css?v=2.2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Font Awesome & JSZip -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+    <div class="background-overlay"></div>
+    
+    <div class="container">
+        <nav class="mode-nav">
+            <button id="gamerModeBtn" class="nav-btn active"><i class="fas fa-gamepad"></i> MODO GAMER</button>
+            <button id="studentModeBtn" class="nav-btn"><i class="fas fa-graduation-cap"></i> MODO ESTUDANTE</button>
+            <button id="humanizeModeBtn" class="nav-btn"><i class="fas fa-user-edit"></i> HUMANIZAR TEXTO</button>
+            <button id="projectsModeBtn" class="nav-btn"><i class="fas fa-folder-open"></i> MEUS PROJETOS</button>
+            <button id="supportModeBtn" class="nav-btn"><i class="fas fa-headset"></i> SUPORTE</button>
+            <button id="adminPanelBtn" class="nav-btn admin-only hidden"><i class="fas fa-user-shield"></i> PAINEL ADMIN</button>
+        </nav>
+
+        <header>
+            <img src="https://cdn.discordapp.com/attachments/1388327970543763599/1484691361633407136/ChatGPT_Image_19_de_mar._de_2026_05_09_37_1.png?ex=69bf2614&is=69bdd494&hm=332c75ce05d7214163e506cbe4ef80f14c8f347fb7d003a594131fb249c90f06&" alt="BuckAI Logo" class="main-logo">
+            <h1 id="logo" class="neon-text">BuckAI</h1>
+            <div id="userInfo" class="user-info-bar hidden">
+                <div class="user-profile-header">
+                    <div class="profile-avatar-container">
+                        <img id="userAvatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar">
+                    </div>
+                    <span id="welcomeUser" class="welcome-user"></span>
+                    <button id="settingsBtn" class="settings-btn"><i class="fas fa-cog"></i></button>
+                </div>
+                <div class="user-badges">
+                    <div class="credit-badge">
+                        <i class="fas fa-bolt"></i> <span id="userCredits">0</span> CRÉDITOS
+                    </div>
+                    <button id="upgradeBtn" class="premium-badge">
+                        <i class="fas fa-crown"></i> SEJA PREMIUM
+                    </button>
+                    <div id="activationArea" class="activation-area hidden">
+                        <input type="text" id="activationCode" placeholder="CÓDIGO DE ATIVAÇÃO">
+                        <button id="activateBtn" class="activate-btn">ATIVAR</button>
+                    </div>
+                </div>
+            </div>
+            <p class="subtitle">O futuro dos scripts gamer começa aqui</p>
+        </header>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <span id="activeNow">0</span>
+                <p>ATIVOS AGORA</p>
+            </div>
+            <div class="stat-card">
+                <span id="totalScripts">0</span>
+                <p>SCRIPTS GERADOS</p>
+            </div>
+            <div class="stat-card">
+                <span id="totalClients">0</span>
+                <p>TOTAL CLIENTES</p>
+            </div>
+        </div>
+
+        <main>
+            <!-- MODO GAMER -->
+            <div id="gamerSection" class="mode-section">
+                <div class="input-card">
+                    <div class="input-group">
+                        <label for="description"><i class="fas fa-terminal"></i> O QUE VOCÊ QUER CRIAR?</label>
+                        <textarea id="description" placeholder="Descreva o seu script em detalhes... Ex: Sistema de roubo a banco com aviso para a polícia."></textarea>
+                    </div>
+
+                    <div class="options-group">
+                        <label><i class="fas fa-layer-group"></i> PLATAFORMA:</label>
+                        <div class="platform-selector">
+                            <input type="radio" name="platform" value="FiveM" id="fivem" checked>
+                            <label for="fivem" class="platform-btn">FiveM (Lua)</label>
+
+                            <input type="radio" name="platform" value="SA-MP" id="samp">
+                            <label for="samp" class="platform-btn">SA-MP (Pawn)</label>
+                        </div>
+                    </div>
+
+                    <div class="vision-group">
+                        <label><i class="fas fa-bug"></i> ANALISAR ERRO (OPCIONAL):</label>
+                        <input type="file" id="imageInput" accept="image/*" class="hidden">
+                        <button id="uploadImageBtn" class="vision-button">
+                            <i class="fas fa-image"></i> <span id="imageStatus">ANEXAR PRINT DO ERRO</span>
+                        </button>
+                    </div>
+
+                    <button id="generateBtn" class="neon-button">
+                        <span class="btn-text">GERAR SCRIPT AGORA</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODO ESTUDANTE -->
+            <div id="studentSection" class="mode-section hidden">
+                <div class="input-card">
+                    <div class="input-group">
+                        <label for="studentTask"><i class="fas fa-book-open"></i> QUAL A SUA DÚVIDA?</label>
+                        <textarea id="studentTask" placeholder="Ex: Resolva esta equação de segundo grau ou explique o que foi a Revolução Francesa..."></textarea>
+                    </div>
+
+                    <div class="vision-group">
+                        <label><i class="fas fa-camera"></i> FOTO DO EXERCÍCIO:</label>
+                        <input type="file" id="studentImageInput" accept="image/*" class="hidden">
+                        <button id="uploadStudentImageBtn" class="vision-button">
+                            <i class="fas fa-camera-retro"></i> <span id="studentImageStatus">TIRAR/ENVIAR FOTO</span>
+                        </button>
+                    </div>
+
+                    <button id="studyBtn" class="neon-button">
+                        <span class="btn-text">OBTER RESPOSTA IA</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODO HUMANIZADOR -->
+            <div id="humanizeSection" class="mode-section hidden">
+                <div class="input-card">
+                    <div class="input-group">
+                        <label for="humanizeText"><i class="fas fa-feather-alt"></i> TEXTO PARA HUMANIZAR</label>
+                        <textarea id="humanizeText" placeholder="Cole aqui o texto que você quer deixar mais natural..."></textarea>
+                    </div>
+
+                    <div class="options-group">
+                        <label><i class="fas fa-adjust"></i> TOM DA REESCRITA:</label>
+                        <div class="platform-selector">
+                            <input type="radio" name="humanizeTone" value="Casual" id="toneCasual" checked>
+                            <label for="toneCasual" class="platform-btn">Casual</label>
+
+                            <input type="radio" name="humanizeTone" value="Profissional" id="toneProfissional">
+                            <label for="toneProfissional" class="platform-btn">Profissional</label>
+
+                            <input type="radio" name="humanizeTone" value="Gamer" id="toneGamer">
+                            <label for="toneGamer" class="platform-btn">Gamer</label>
+                        </div>
+                    </div>
+
+                    <button id="humanizeBtn" class="neon-button">
+                        <span class="btn-text">HUMANIZAR AGORA</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- MEUS PROJETOS -->
+            <div id="projectsSection" class="mode-section hidden">
+                <div class="input-card">
+                    <div class="section-header">
+                        <h2 class="neon-text-small"><i class="fas fa-history"></i> HISTÓRICO DE CRIAÇÕES</h2>
+                        <button id="clearHistoryBtn" class="nav-btn-small"><i class="fas fa-trash"></i> LIMPAR TUDO</button>
+                    </div>
+                    <div id="historyList" class="history-grid">
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i>
+                            <p>Você ainda não criou nenhum projeto.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAINEL ADMIN -->
+            <div id="adminSection" class="mode-section hidden">
+                <div class="input-card">
+                    <div class="section-header">
+                        <h2 class="neon-text-small"><i class="fas fa-user-shield"></i> PAINEL DE CONTROLE ADMIN</h2>
+                    </div>
+                    
+                    <div class="admin-grid">
+                        <div class="admin-card">
+                            <h3><i class="fas fa-key"></i> GERAR CÓDIGOS VIP</h3>
+                            <div class="auth-fields">
+                                <input type="number" id="adminBatchCount" value="50" placeholder="Qtd">
+                                <button id="adminBatchBtn" class="neon-button-small">GERAR E MANDAR DISCORD</button>
+                            </div>
+                            <div id="recentCodesList" class="codes-list-mini hidden">
+                                <h4>Últimos códigos gerados:</h4>
+                                <div id="codesContainer" class="codes-inner"></div>
+                            </div>
+                        </div>
+
+                        <div class="admin-card">
+                            <h3><i class="fas fa-users-cog"></i> GESTÃO DE ACESSOS</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 10px;">Dê acesso Admin para outro usuário (ID):</p>
+                            <div class="auth-fields">
+                                <input type="text" id="targetAdminId" placeholder="#BUCK-000000">
+                                <button id="giveAdminBtn" class="neon-button-small">DAR ADMIN</button>
+                            </div>
+                        </div>
+
+                        <div class="admin-card">
+                            <h3><i class="fas fa-comments"></i> TICKETS DE SUPORTE</h3>
+                            <div id="adminTicketsList" class="tickets-container">
+                                <p class="empty-text">Sem tickets abertos.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-logs-area">
+                        <h3><i class="fas fa-list-ul"></i> LOGS DE ATIVIDADE RECENTE</h3>
+                        <div id="adminLogsList" class="logs-container">
+                            <p class="empty-text">Aguardando logs do servidor...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUPORTE -->
+            <div id="supportSection" class="mode-section hidden">
+                <div class="input-card">
+                    <div class="section-header">
+                        <h2 class="neon-text-small"><i class="fas fa-headset"></i> CENTRAL DE SUPORTE</h2>
+                    </div>
+                    
+                    <div class="support-chat-container">
+                        <div id="supportMessages" class="chat-messages">
+                            <div class="msg-system">Bem-vindo ao suporte BuckAI! Como podemos ajudar hoje?</div>
+                        </div>
+                        <div class="chat-input-area">
+                            <input type="text" id="supportInput" placeholder="Digite sua dúvida aqui...">
+                            <button id="sendSupportBtn" class="neon-button-small">ENVIAR</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÁREA DE SCRIPT GERADO -->
+            <div id="resultArea" class="result-card hidden">
+                <div class="result-header">
+                    <h3><i class="fas fa-code"></i> SCRIPT GERADO</h3>
+                    <div class="result-buttons">
+                        <button id="downloadBtn" class="download-button"><i class="fas fa-file-zipper"></i> ZIP</button>
+                        <button id="fixBtn" class="fix-button"><i class="fas fa-wand-magic-sparkles"></i> CORRIGIR</button>
+                        <button id="copyBtn" class="copy-button"><i class="fas fa-copy"></i> COPIAR</button>
+                    </div>
+                </div>
+                <div class="code-container">
+                    <pre><code id="outputCode"></code></pre>
+                </div>
+            </div>
+        </main>
+
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="social-links">
+                <a href="https://discord.gg/86E9RvZ9Ya" target="_blank" class="social-btn discord"><i class="fab fa-discord"></i> Discord</a>
+                <a href="https://youtube.com/@buck-rp?si=AL2UuVHn1WpQSwZT" target="_blank" class="social-btn youtube"><i class="fab fa-youtube"></i> YouTube</a>
+            </div>
+            <p>Criado por: <strong>buck__ai</strong></p>
+            <p>&copy; 2026 BuckAI - Todos os direitos reservados</p>
+            <div id="adminTrigger" style="width: 20px; height: 20px; cursor: pointer; opacity: 0.1; margin: 0 auto;"></div>
+        </div>
+    </footer>
+    </div>
+
+    <!-- LOCK SCREEN -->
+    <div id="lockScreen" class="lock-overlay hidden">
+        <div class="lock-content">
+            <img src="https://cdn.discordapp.com/attachments/1388327970543763599/1484691361633407136/ChatGPT_Image_19_de_mar._de_2026_05_09_37_1.png?ex=69bf2614&is=69bdd494&hm=332c75ce05d7214163e506cbe4ef80f14c8f347fb7d003a594131fb249c90f06&" alt="BuckAI Logo" class="lock-logo">
+            <h2 id="authTitle" class="neon-text-small">BEM-VINDO</h2>
+            <p id="authDesc">Crie sua conta ou faça login para acessar:</p>
+            <div class="auth-fields">
+                <input type="text" id="authUsername" placeholder="Usuário">
+                <input type="password" id="authPassword" placeholder="Senha">
+            </div>
+            <div class="lock-buttons">
+                <button id="loginBtn" class="neon-button-small">ENTRAR</button>
+                <button id="registerBtn" class="neon-button-small secondary">CADASTRAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE PERFIL -->
+    <div id="settingsModal" class="lock-overlay hidden">
+        <div class="lock-content profile-modal">
+            <button id="closeSettingsBtn" class="close-modal-btn">&times;</button>
+            <h2 class="neon-text-small">PERFIL DO USUÁRIO</h2>
+            <div class="profile-setup">
+                <div class="avatar-upload">
+                    <img id="profilePreview" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Preview">
+                    <input type="file" id="avatarInput" accept="image/*" class="hidden">
+                    <button id="changeAvatarBtn" class="neon-button-small">MUDAR FOTO</button>
+                </div>
+                <div class="profile-info-fields">
+                    <p>ID: <span id="userIdDisplay">#000000</span></p>
+                    <p>USER: <span id="userNameDisplay">---</span></p>
+                    <p>STATUS: <span id="userStatusDisplay">MEMBRO FREE</span></p>
+                </div>
+            </div>
+            <button id="saveProfileBtn" class="neon-button-small">SALVAR</button>
+            <button id="logoutBtn" class="neon-button-small logout-btn">SAIR</button>
+        </div>
+    </div>
+
+    <!-- MODAL DE PAGAMENTO -->
+    <div id="paymentModal" class="lock-overlay hidden">
+        <div class="lock-content">
+            <button id="closePaymentBtn" class="close-modal-btn">&times;</button>
+            <h2 class="neon-text-small">TORNE-SE PREMIUM</h2>
+            <a href="https://livepix.gg/padrinrp" target="_blank" class="neon-button-small" style="text-decoration:none; display:block; margin:20px 0; background:#10b981;">PAGAR VIA LIVEPIX</a>
+            <div class="auth-fields">
+                <input type="text" id="modalActivationCode" placeholder="COLE SEU CÓDIGO AQUI">
+                <button id="modalActivateBtn" class="neon-button-small">ATIVAR PREMIUM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOADER -->
+    <div id="loader" class="loader-overlay hidden"><div class="loader"></div><p>PROCESSANDO...</p></div>
+
+    <!-- ELEMENTOS DE SEGURANÇA (DUMMY) -->
+    <div id="verifySubBtn" style="display:none;"></div>
+
+    <script src="script.js?v=999"></script>
+    <script>
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('keydown', e => { if (e.ctrlKey && ['u','s','p'].includes(e.key)) e.preventDefault(); });
+    </script>
+</body>
+</html>

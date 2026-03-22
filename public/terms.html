@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termos de Serviço — BuckAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #020617;
+            --card-bg: #0f172a;
+            --primary-purple: #7c3aed;
+            --neon-blue: #00d2ff;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent: #d8b4fe;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(0, 210, 255, 0.1) 0%, transparent 40%);
+        }
+
+        .terms-container {
+            width: 90%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border: 1px solid rgba(124, 58, 237, 0.2);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.8s ease-out;
+            margin: 40px 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: var(--primary-purple);
+            text-shadow: 0 0 10px rgba(124, 58, 237, 0.5);
+            letter-spacing: 2px;
+        }
+
+        .terms-content {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 15px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            font-size: 0.95rem;
+            color: var(--text-dim);
+        }
+
+        .terms-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .terms-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .terms-content::-webkit-scrollbar-thumb {
+            background: var(--primary-purple);
+            border-radius: 10px;
+        }
+
+        h2 {
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin: 25px 0 15px 0;
+            font-weight: 600;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        ul {
+            list-style: none;
+            margin-bottom: 15px;
+        }
+
+        ul li::before {
+            content: "•";
+            color: var(--neon-blue);
+            font-weight: bold;
+            display: inline-block;
+            width: 1em;
+            margin-left: 10px;
+        }
+
+        .observation {
+            background: rgba(124, 58, 237, 0.1);
+            border-left: 4px solid var(--primary-purple);
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .observation h3 {
+            color: var(--text-main);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .footer-actions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-wrapper input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary-purple);
+        }
+
+        .checkbox-wrapper label {
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .btn-continue {
+            background: linear-gradient(135deg, var(--primary-purple) 0%, #4c1d95 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.5;
+            pointer-events: none;
+            box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+        }
+
+        .btn-continue.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .btn-continue.active:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px rgba(124, 58, 237, 0.6);
+        }
+
+        @media (max-width: 600px) {
+            .terms-container {
+                padding: 25px;
+                width: 95%;
+            }
+            h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="terms-container">
+        <header>
+            <h1>📜 Termos de Serviço — BuckAI</h1>
+        </header>
+
+        <div class="terms-content">
+            <p>Ao utilizar a plataforma BuckAI, você concorda com os termos descritos abaixo:</p>
+
+            <h2>1. Uso da Plataforma</h2>
+            <p>A BuckAI oferece serviços baseados em inteligência artificial para geração de conteúdos, scripts e automações. O uso da plataforma deve respeitar as leis vigentes e não pode ser utilizado para fins ilegais, abusivos ou prejudiciais.</p>
+
+            <h2>2. Finalidade Educacional</h2>
+            <p>A BuckAI é um projeto desenvolvido exclusivamente para fins educacionais e experimentais. Não garantimos precisão, confiabilidade ou adequação dos conteúdos gerados para uso profissional, comercial ou crítico.</p>
+
+            <h2>3. Natureza do Serviço (Doações)</h2>
+            <p>A BuckAI não realiza venda de produtos ou serviços. Qualquer valor enviado à plataforma é considerado doação voluntária, sem caráter obrigatório e sem garantia de benefícios específicos.</p>
+            <p>As doações:</p>
+            <ul>
+                <li>Não são reembolsáveis</li>
+                <li>Não representam compra de produto ou serviço</li>
+                <li>Não criam vínculo comercial entre o usuário e a BuckAI</li>
+            </ul>
+
+            <h2>4. Modificações no Serviço</h2>
+            <p>A BuckAI se reserva o direito de, a qualquer momento e sem aviso prévio:</p>
+            <ul>
+                <li>Modificar funcionalidades</li>
+                <li>Atualizar ou remover recursos</li>
+                <li>Alterar limites de uso</li>
+            </ul>
+
+            <h2>5. Encerramento ou Suspensão</h2>
+            <p>A BuckAI pode, a qualquer momento e sem aviso prévio:</p>
+            <ul>
+                <li>Encerrar totalmente suas atividades</li>
+                <li>Suspender ou desativar a plataforma</li>
+                <li>Remover acesso de usuários</li>
+            </ul>
+            <p>Sem obrigação de justificativa, aviso prévio ou compensação.</p>
+
+            <h2>6. Disponibilidade</h2>
+            <p>Não garantimos que a plataforma estará disponível 24 horas por dia. Instabilidades, manutenções ou falhas podem ocorrer a qualquer momento.</p>
+
+            <h2>7. Responsabilidade</h2>
+            <p>O uso da BuckAI é de total responsabilidade do usuário. Não nos responsabilizamos por:</p>
+            <ul>
+                <li>Perda de dados</li>
+                <li>Danos diretos ou indiretos</li>
+                <li>Uso indevido da plataforma</li>
+                <li>Conteúdos gerados pela IA</li>
+            </ul>
+
+            <h2>8. Alterações nos Termos</h2>
+            <p>Os termos podem ser alterados a qualquer momento. O uso contínuo da plataforma implica na aceitação das novas condições.</p>
+
+            <div class="observation">
+                <h3>⚠️ Observação Final</h3>
+                <p>Ao utilizar a BuckAI, você declara estar ciente de que:</p>
+                <ul>
+                    <li>O projeto é educacional e experimental</li>
+                    <li>O serviço pode ser modificado, interrompido ou encerrado a qualquer momento</li>
+                    <li>Não há garantia de continuidade ou estabilidade</li>
+                    <li>Qualquer valor enviado é considerado doação voluntária, não sendo uma compra</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-actions">
+            <div class="checkbox-wrapper">
+                <input type="checkbox" id="acceptTerms">
+                <label for="acceptTerms">Li e aceito os termos de serviço</label>
+            </div>
+            <button id="btnContinue" class="btn-continue">Aceitar e continuar</button>
+        </div>
+    </div>
+
+    <script>
+        const checkbox = document.getElementById('acceptTerms');
+        const btn = document.getElementById('btnContinue');
+
+        checkbox.addEventListener('change', () => {
+            if (checkbox.checked) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+
+        btn.addEventListener('click', () => {
+            if (checkbox.checked) {
+                // Salva a aceitação no localStorage para não pedir de novo
+                localStorage.setItem('buckai_terms_accepted', 'true');
+                // Redireciona para o sistema principal
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Bloqueia acesso se tentar burlar via URL (opcional)
+        window.onload = () => {
+            if (localStorage.getItem('buckai_terms_accepted') === 'true' && window.location.pathname.includes('terms.html')) {
+                // Se já aceitou e está na página de termos, pode redirecionar para a home
+                // window.location.href = 'index.html'; 
+            }
+        };
+    </script>
+</body>
+</html>
