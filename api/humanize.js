@@ -7,7 +7,7 @@ const WEBHOOKS = {
 };
 
 const KEYS = {
-  GROQ: "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",
+  GROQ: process.env.GROQ_API_KEY || "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",
   GEMINI: process.env.GEMINI_API_KEY || ""
 };
 

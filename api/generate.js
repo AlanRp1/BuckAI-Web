@@ -8,12 +8,13 @@ const WEBHOOKS = {
 
 // CHAVES DE ACESSO (SISTEMA MULTI-IA)
 const KEYS = {
-  GROQ: "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",
-  GEMINI: process.env.GEMINI_API_KEY || "", // Fallback 1
-  OPENAI: process.env.OPENAI_API_KEY || ""  // Fallback 2
+  GROQ: process.env.GROQ_API_KEY || "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",
+  GEMINI: process.env.GEMINI_API_KEY || "", 
+  OPENAI: process.env.OPENAI_API_KEY || ""
 };
 
-const groq = new Groq({ apiKey: KEYS.GROQ });
+// Garantir que o SDK use a chave correta
+const groq = new Groq({ apiKey: KEYS.GROQ || "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" });
 
 const BUCK_INSTRUCTIONS = `Você é o BuckAI, o desenvolvedor #1 de scripts FiveM.
 Sua missão é entregar o código SEMPRE no formato de blocos para que o sistema crie as pastas.
