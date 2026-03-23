@@ -245,7 +245,10 @@
             <div id="resultArea" class="result-card hidden">
                 <div class="result-header">
                     <span style="font-size:0.8rem; font-weight:bold; color:var(--accent-neon); font-family:'Orbitron';"><i class="fas fa-microchip"></i> RESPOSTA DA IA</span>
-                    <button id="copyBtn" style="background:var(--primary-neon); color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-size:0.75rem; font-weight:bold; transition:0.3s;">COPIAR</button>
+                    <div style="display:flex; gap:10px;">
+                        <button id="downloadBtn" style="background:var(--success); color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-size:0.75rem; font-weight:bold; transition:0.3s; display:none;"><i class="fas fa-file-zipper"></i> BAIXAR .ZIP</button>
+                        <button id="copyBtn" style="background:var(--primary-neon); color:white; border:none; padding:8px 20px; border-radius:8px; cursor:pointer; font-size:0.75rem; font-weight:bold; transition:0.3s;">COPIAR</button>
+                    </div>
                 </div>
                 <div id="outputCode" class="code-container"></div>
             </div>
@@ -589,15 +592,23 @@
 
                         const result = await res.json();
                         
-                        getEl('outputCode').textContent = result.result || result.answer || result.text || "Erro: A IA não retornou conteúdo.";
+                        const finalResult = result.result || result.answer || result.text || "";
+                        getEl('outputCode').textContent = finalResult || "Erro: A IA não retornou conteúdo.";
                         getEl('resultArea').classList.remove('hidden');
                         getEl('resultArea').scrollIntoView({ behavior: 'smooth' });
+
+                        // Mostrar botão de download apenas no modo gamer
+                        if (id === 'generateBtn' && finalResult) {
+                            getEl('downloadBtn').style.display = 'block';
+                        } else {
+                            getEl('downloadBtn').style.display = 'none';
+                        }
 
                         // Salvar no histórico
                         data.history.unshift({
                             mode: id.replace('Btn', ''),
                             date: new Date().toLocaleString(),
-                            result: getEl('outputCode').textContent
+                            result: finalResult
                         });
                         if (!data.isPremium) data.credits--;
                         saveUserData(data);
@@ -720,6 +731,53 @@
                     showToast("Copiado para a área de transferência!");
                     getEl('copyBtn').textContent = "COPIADO!";
                     setTimeout(() => getEl('copyBtn').textContent = "COPIAR", 2000);
+                }
+
+                if (id === 'downloadBtn') {
+                    const code = getEl('outputCode').textContent;
+                    if (!code) return;
+                    
+                    getEl('loader').classList.remove('hidden');
+                    getEl('loaderText').textContent = "CRIANDO ZIP...";
+                    
+                    try {
+                        const zip = new JSZip();
+                        const files = code.split('---');
+                        let fileCount = 0;
+
+                        files.forEach(part => {
+                            if (!part.trim()) return;
+                            const lines = part.trim().split('\n');
+                            const fileNameLine = lines[0].trim();
+                            if (fileNameLine.startsWith('[') || fileNameLine.includes('.')) {
+                                const fileName = fileNameLine.replace(/[\[\]]/g, '').trim();
+                                const content = lines.slice(1).join('\n').trim();
+                                if (fileName && content) {
+                                    zip.file(fileName, content);
+                                    fileCount++;
+                                }
+                            }
+                        });
+
+                        // Se não encontrou blocos formatados, baixa o código inteiro como script.txt
+                        if (fileCount === 0) {
+                            zip.file("script_gerado.txt", code);
+                        }
+
+                        const content = await zip.generateAsync({type:"blob"});
+                        const url = window.URL.createObjectURL(content);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `BuckAI_Script_${Date.now()}.zip`;
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        showToast("Download iniciado!");
+                    } catch(err) {
+                        showToast("Erro ao criar ZIP", "error");
+                        console.error(err);
+                    } finally {
+                        getEl('loader').classList.add('hidden');
+                    }
                 }
             });
 
