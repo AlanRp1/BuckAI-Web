@@ -705,11 +705,15 @@
             
             // Atalho para abrir Admin se for o Dono
             document.addEventListener('keydown', (e) => {
-                if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+                // Debug para ajudar o usuário
+                if (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === 'A') {
                     const data = getUserData();
-                    if (data.id === MASTER_ID) {
+                    if (data.id === MASTER_ID || data.isAdmin) {
                         switchTab('admin');
                         showToast("Painel Admin Aberto");
+                        e.preventDefault(); // Evita conflitos com o navegador
+                    } else {
+                        console.log("Acesso negado: ID atual é " + data.id);
                     }
                 }
             });
