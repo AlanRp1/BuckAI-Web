@@ -296,12 +296,20 @@
                     <span style="color:var(--text-dim);">USUÁRIO:</span>
                     <span id="userNameDisplay" style="font-weight:bold;">---</span>
                 </div>
-                <div style="display:flex; justify-content:space-between;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                     <span style="color:var(--text-dim);">STATUS:</span>
                     <span id="userStatusDisplay" style="color:var(--success); font-weight:bold;">FREE</span>
                 </div>
+                <div style="margin-top:15px; border-top:1px solid rgba(255,255,255,0.05); padding-top:15px;">
+                    <label style="font-size:0.7rem; color:var(--text-dim); display:block; margin-bottom:8px;">RESGATAR CÓDIGO VIP:</label>
+                    <div style="display:flex; gap:10px;">
+                        <input type="text" id="redeemCodeInput" placeholder="BUCK-VIP-XXXX" style="flex:1; background:rgba(0,0,0,0.3); border:1px solid #334155; border-radius:8px; padding:8px 12px; color:white; font-family:'Fira Code'; font-size:0.8rem; outline:none;">
+                        <button id="redeemBtn" style="background:var(--primary-neon); border:none; border-radius:8px; color:white; padding:0 15px; cursor:pointer; font-weight:bold; font-size:0.75rem; transition:0.3s;">RESGATAR</button>
+                    </div>
+                </div>
             </div>
             <button id="saveProfileBtn" class="neon-button">SALVAR ALTERAÇÕES</button>
+            <a href="https://livepix.gg/padrinrp" target="_blank" class="neon-button" style="display:block; text-decoration:none; text-align:center; margin-top:15px; background:linear-gradient(90deg, #f59e0b, #fbbf24); color:black; font-weight:bold; font-size:0.8rem; padding:12px;">QUERO ACESSO ILIMITADO 👑</a>
             <button id="logoutBtn" class="neon-button" style="background:var(--danger); margin-top:15px; font-size:0.8rem; padding:10px;">SAIR DA CONTA</button>
         </div>
     </div>
@@ -676,6 +684,21 @@
                         // Como é local, por enquanto ativamos apenas para quem está logado.
                         showToast("Apenas para o seu ID atual por enquanto.", "info");
                     }
+                }
+
+                if (id === 'redeemBtn') {
+                    const code = getEl('redeemCodeInput').value.trim();
+                    if (!code.startsWith('BUCK-VIP-')) return showToast("Código inválido!", "error");
+                    
+                    const data = getUserData();
+                    if (data.isPremium) return showToast("Você já é Premium!", "info");
+                    
+                    data.isPremium = true;
+                    data.credits = 999;
+                    saveUserData(data);
+                    getEl('redeemCodeInput').value = '';
+                    showToast("CÓDIGO VIP RESGATADO! Acesso Ilimitado Ativado.");
+                    setTimeout(() => location.reload(), 1500);
                 }
 
                 if (id === 'copyBtn') {
