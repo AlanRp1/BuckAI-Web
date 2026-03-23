@@ -556,7 +556,7 @@
                         });
                         const result = await res.json();
                         
-                        getEl('outputCode').textContent = result.code || result.answer || result.text || "Erro ao processar resposta.";
+                        getEl('outputCode').textContent = result.result || result.answer || result.text || "Erro ao processar resposta.";
                         getEl('resultArea').classList.remove('hidden');
                         getEl('resultArea').scrollIntoView({ behavior: 'smooth' });
 
