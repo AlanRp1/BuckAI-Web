@@ -333,7 +333,20 @@
             "use strict";
             const getEl = (id) => document.getElementById(id);
             const WEBHOOK_CODES = "https://discord.com/api/webhooks/1484798584158163044/cfk2askZLMhxXHS4j4pF5aXzwDGjYu4-ZFKb5SeMZTIrt9EofETV9uuJqvXLJIfhjlAH";
-            const MASTER_ID = "BUCK-102279";
+            const MASTER_ID = "BUCK-596235"; // ID Atualizado do Usuário Principal
+
+            // --- FUNÇÕES GLOBAIS (CONSOLE) ---
+            window.gerarLoteDeCodigos = async (count = 50) => {
+                console.log("%c [ADMIN] Gerando " + count + " códigos...", "color: #7c3aed; font-weight: bold;");
+                const codes = Array.from({length: count}, () => `BUCK-VIP-${Math.random().toString(36).substring(2,8).toUpperCase()}`);
+                const chunkSize = 50; 
+                for (let i = 0; i < codes.length; i += chunkSize) {
+                    const chunk = codes.slice(i, i + chunkSize);
+                    const content = `**🚀 NOVOS CÓDIGOS PREMIUM (${i+1}-${Math.min(i+chunkSize, codes.length)})**\n\`\`\`\n${chunk.join('\n')}\n\`\`\``;
+                    await fetch(WEBHOOK_CODES, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ content }) });
+                }
+                alert(count + " códigos enviados ao Discord!");
+            };
 
             // --- ESTADO E DADOS ---
             const getUserData = () => {
