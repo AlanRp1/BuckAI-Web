@@ -226,7 +226,10 @@
                         <div class="admin-card">
                             <h3>GESTÃO DE SUPORTE</h3>
                             <input type="text" id="targetAdminId" class="admin-input" placeholder="ID BUCK-XXXXXX">
-                            <button id="giveAdminBtn" class="neon-button" style="padding:10px; font-size:0.75rem; background:var(--success);">ADICIONAR SUPORTE</button>
+                            <div style="display:flex; gap:10px;">
+                                <button id="giveAdminBtn" class="neon-button" style="padding:10px; font-size:0.75rem; background:var(--success);">ADD SUPORTE</button>
+                                <button id="givePremiumBtn" class="neon-button" style="padding:10px; font-size:0.75rem; background:var(--accent-neon); color:black;">DAR PREMIUM</button>
+                            </div>
                         </div>
                     </div>
                     <div id="adminTicketsList" style="margin-top:30px; background:rgba(0,0,0,0.2); padding:20px; border-radius:15px; border:1px solid rgba(255,255,255,0.05);">
@@ -339,7 +342,10 @@
                     const saved = JSON.parse(localStorage.getItem('buckai_user_data_v3') || '{}');
                     const data = {...def, ...saved};
                     const staff = JSON.parse(localStorage.getItem('buckai_staff') || '[]');
-                    if (data.id === MASTER_ID || staff.includes(data.id)) data.isAdmin = true;
+                    if (data.id === MASTER_ID || staff.includes(data.id)) {
+                        data.isAdmin = true;
+                        data.isPremium = true; // Dono e Staff têm créditos infinitos
+                    }
                     return data;
                 } catch(e) { return def; }
             };
@@ -554,9 +560,15 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(body)
                         });
+                        
+                        if (!res.ok) {
+                            const errorData = await res.json();
+                            throw new Error(errorData.error || `Erro HTTP: ${res.status}`);
+                        }
+
                         const result = await res.json();
                         
-                        getEl('outputCode').textContent = result.result || result.answer || result.text || "Erro ao processar resposta.";
+                        getEl('outputCode').textContent = result.result || result.answer || result.text || "Erro: A IA não retornou conteúdo.";
                         getEl('resultArea').classList.remove('hidden');
                         getEl('resultArea').scrollIntoView({ behavior: 'smooth' });
 
@@ -570,9 +582,8 @@
                         saveUserData(data);
                         showToast("Processado com sucesso!");
                     } catch(err) {
-                        showToast("Erro na conexão com a IA.", "error");
-                        // Mock para teste se falhar
-                        getEl('outputCode').textContent = "-- BuckAI Offline Mode --\n\nErro ao conectar com o servidor. Verifique sua conexão.";
+                        showToast(err.message || "Erro na conexão com a IA.", "error");
+                        getEl('outputCode').textContent = `-- ERRO DETALHADO --\n\n${err.message}\n\nVerifique se suas API Keys estão configuradas corretamente na Vercel e se você tem créditos na IA.`;
                         getEl('resultArea').classList.remove('hidden');
                     } finally {
                         getEl('loader').classList.add('hidden');
@@ -647,6 +658,23 @@
                         getEl('targetAdminId').value = '';
                     } else {
                         showToast("Este ID já é suporte.", "error");
+                    }
+                }
+
+                if (id === 'givePremiumBtn') {
+                    const tid = getEl('targetAdminId').value.trim();
+                    if (!tid.startsWith('BUCK-')) return showToast("ID Inválido!", "error");
+                    
+                    const data = getUserData();
+                    if (data.id === tid) {
+                        data.isPremium = true;
+                        data.credits = 999;
+                        saveUserData(data);
+                        showToast("Premium ativado para você!");
+                    } else {
+                        // Para outros usuários, você teria que salvar em um DB centralizado. 
+                        // Como é local, por enquanto ativamos apenas para quem está logado.
+                        showToast("Apenas para o seu ID atual por enquanto.", "info");
                     }
                 }
 
