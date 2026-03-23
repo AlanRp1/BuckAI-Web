@@ -1,1 +1,28 @@
-.vercel
+# Node modules
+node_modules/
+
+# Electron build folders
+dist/
+dist_final/
+dist_installer/
+
+# Vercel
+.vercel/
+
+# Environment
+.env
+
+# Binary files anywhere
+**/*.exe
+**/*.dll
+**/*.pak
+**/*.bin
+**/*.dat
+**/*.zip
+**/*.msi
+
+# Electron specific
+main.js
+server.js
+package-lock.json
+builder-debug.yml
